@@ -17,14 +17,8 @@
 uint32_t _memSize = 0;
 uint32_t _prgmSpace = 0;
 
-#define FLASH_SELECT                          \
-    {                                         \
-        PORT->Group[0].OUTCLR.reg = FLASH_SS; \
-    }
-#define FLASH_UNSELECT                        \
-    {                                         \
-        PORT->Group[0].OUTSET.reg = FLASH_SS; \
-    }
+#define FLASH_SELECT OUTPUT_LOW( FLASH_SS )
+#define FLASH_UNSELECT OUTPUT_HIGH( FLASH_SS )
 
 uint8_t FLASH_busy()
 {

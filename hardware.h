@@ -4,13 +4,13 @@
 #include <stdint.h>
 #include <sam.h>
 
-#define OUTPUT_LOW( x )                \
-    {                                  \
-        PORT->Group[0].OUTCLR.reg = x; \
+#define OUTPUT_LOW( x )                         \
+    {                                           \
+        PORT->Group[0].OUTCLR.reg = ( 1 << x ); \
     }
-#define OUTPUT_HIGH( x )               \
-    {                                  \
-        PORT->Group[0].OUTSET.reg = x; \
+#define OUTPUT_HIGH( x )                        \
+    {                                           \
+        PORT->Group[0].OUTSET.reg = ( 1 << x ); \
     }
 #define SET_PIN_OUTMODE( x )                                \
     {                                                       \
@@ -18,12 +18,12 @@
     }
 #define SET_ODD_PIN_PERIPH( pin, periph )                                  \
     {                                                                      \
-        PORT->Group[0].PMUX[( pin >> 1 )].reg = PORT_PMUX_PMUXO( periph ); \
+        PORT->Group[0].PMUX[( pin >> 1 )].reg |= PORT_PMUX_PMUXO( periph ); \
         PORT->Group[0].PINCFG[pin].reg = PORT_PINCFG_PMUXEN;               \
     }
 #define SET_EVEN_PIN_PERIPH( pin, periph )                                 \
     {                                                                      \
-        PORT->Group[0].PMUX[( pin >> 1 )].reg = PORT_PMUX_PMUXE( periph ); \
+        PORT->Group[0].PMUX[( pin >> 1 )].reg |= PORT_PMUX_PMUXE( periph ); \
         PORT->Group[0].PINCFG[pin].reg = PORT_PINCFG_PMUXEN;               \
     }
 
@@ -48,7 +48,7 @@
 // UART Settings
 #define UART_TX_PAD 1
 #define UART_RX_PAD 3
-#define UART_BAUD_RATE 38400 
+#define UART_BAUD_RATE 38400
 
 void    initHardware();
 uint8_t SPI_transfer( uint8_t _data );

@@ -33,10 +33,14 @@ inline void SPI_init()
 
     // Setting the CTRLB register
     SERCOM1->SPI.CTRLB.reg = SERCOM_SPI_CTRLB_RXEN; // Active the SPI receiver.
+    while( SERCOM1->SPI.STATUS.bit.SYNCBUSY )
+        ;
 
     // Set the baud rate and enable
     SERCOM1->SPI.BAUD.reg = FCPU / ( 2 * SPI_BAUD_RATE ) - 1;
     SERCOM1->SPI.CTRLA.bit.ENABLE = 1;
+    while( SERCOM1->SPI.STATUS.bit.SYNCBUSY )
+        ;
 }
 
 inline void UART_init()
