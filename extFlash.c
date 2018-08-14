@@ -20,6 +20,8 @@ uint32_t _prgmSpace = 0;
 #define FLASH_SELECT OUTPUT_LOW( FLASH_SS )
 #define FLASH_UNSELECT OUTPUT_HIGH( FLASH_SS )
 
+uint16_t deviceId;
+
 uint8_t FLASH_busy()
 {
     FLASH_SELECT;
@@ -54,13 +56,46 @@ uint8_t FLASH_readByte( uint32_t addr )
     return result;
 }
 
+#ifdef DEBUG
+void FLASH_writeByte( uint32_t addr, uint8_t byte )
+{
+    if( addr % 256 == 0 ) FLASH_erasePage( addr );
+    FLASH_command( SPIFLASH_BYTEPAGEPROGRAM, 1 );
+    SPI_transfer( addr >> 16 );
+    SPI_transfer( addr >> 8 );
+    SPI_transfer( addr );
+    SPI_transfer( byte );
+    FLASH_UNSELECT;
+}
+
+void FLASH_erasePage( uint32_t addr )
+{
+    FLASH_command( SPIFLASH_PAGEERASE_256, 1 ); // WE not required
+    if( deviceId == AT25DF041B ) {
+        // Page address consists of 11 page address bits PA<10:0> of 256Bytes
+        // each
+        SPI_transfer( ( ( uint8_t )( addr >> 8 ) ) & 0x07 ); // byte 1
+        SPI_transfer( (uint8_t)addr );                       // byte 2
+        SPI_transfer( 0 );                                   // byte 3 (dummy)
+        FLASH_UNSELECT;
+    }
+    else {
+        // Page address consists of 9 page address bits PA<8:0> of 256Bytes each
+        SPI_transfer( ( ( uint8_t )( addr >> 8 ) ) & 0x01 ); // byte 1
+        SPI_transfer( (uint8_t)addr );                       // byte 2
+        SPI_transfer( 0 );                                   // byte 3 (dummy)
+        FLASH_UNSELECT;
+    }
+}
+#endif /* DEBUG */
+
 void CheckFlashImage()
 {
     // Get manufacturer ID and JEDEC ID
     FLASH_SELECT;
     SPI_transfer( SPIFLASH_JEDECID );
-    uint8_t  manufacturerId = SPI_transfer( 0 );
-    uint16_t deviceId = SPI_transfer( 0 );
+    uint8_t manufacturerId = SPI_transfer( 0 );
+    deviceId = SPI_transfer( 0 );
     deviceId <<= 8;
     deviceId |= SPI_transfer( 0 );
     FLASH_UNSELECT;
