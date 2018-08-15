@@ -129,7 +129,7 @@ void CheckFlashImage()
      ~~~ |0                   10                  20                  30 | ...
      ~~~ |0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1| ...
      ~~~ +---------------------------------------------------------------+
-     ~~~ |F L X I M G|:|X X X X|:|D D D D D D D D D D D D D D D D D D D D| ...
+     ~~~ |F L X I M G|:|X X X X|:| CODESEG PRGMCNTR                      | ...
      ~~~ + - - - - - - - - - - - - - - - +-------------------------------+
      ~~~ | ID String |S|Len|S| Binary Image data                         | ...
      ~~~ +---------------------------------------------------------------+
@@ -154,12 +154,27 @@ void CheckFlashImage()
     uint32_t imagesize = ( FLASH_readByte( 7 ) << 24 ) |
                          ( FLASH_readByte( 8 ) << 16 ) |
                          ( FLASH_readByte( 9 ) << 8 ) | FLASH_readByte( 10 );
+
+    // Grab the code segment
+    uint32_t codeSeg = ( FLASH_readByte( 12 ) << 24 ) |
+                       ( FLASH_readByte( 13 ) << 16 ) |
+                       ( FLASH_readByte( 14 ) << 8 ) | FLASH_readByte( 15 );
+
+    // Grab the program counter
+    uint32_t prgmCntr = ( FLASH_readByte( 16 ) << 24 ) |
+                        ( FLASH_readByte( 17 ) << 16 ) |
+                        ( FLASH_readByte( 18 ) << 8 ) | FLASH_readByte( 19 );
+
     if( imagesize == 0 || imagesize > _memSize || imagesize > _prgmSpace )
         goto erase;
 
     // Variables for moving the image to internal program space
     uint32_t i;
-    uint32_t prgmSpaceAddr = 0x8000;//params.bootSize;
+#ifdef DEBUG
+    uint32_t prgmSpaceAddr = 0x00008000;
+#else
+    uint32_t prgmSpaceAddr = params.bootSize;
+#endif /* DEBUG */
     uint16_t cacheIndex = 0;
     uint8_t *cache = (uint8_t *)malloc( sizeof( uint8_t ) * params.rowSize );
 
@@ -174,11 +189,16 @@ void CheckFlashImage()
         }
     }
 
+    if( cacheIndex > 0 ) {
+        eraseRow( prgmSpaceAddr );
+        writeFlash( prgmSpaceAddr, cache, cacheIndex );
+    }
+
     free( cache );
 
 erase : {
     uint32_t flashAddr;
-    for( flashAddr = 0; flashAddr < imagesize; flashAddr += 0x8000 ) {
+    for( flashAddr = 0; flashAddr <= imagesize; flashAddr += 0x8000 ) {
         FLASH_command( SPIFLASH_BLOCKERASE_32K, 1 );
         SPI_transfer( flashAddr >> 16 );
         SPI_transfer( flashAddr >> 8 );
@@ -187,5 +207,27 @@ erase : {
     }
 }
 
-    // TODO: Reset CPU?
+    {
+#define APP_START_ADDR 0x00008000
+        /* Pointer to the Application Section */
+        void ( *application_code_entry )( void );
+
+        /* Rebase the Stack Pointer */
+        __set_MSP( *(uint32_t *)APP_START_ADDR );
+
+        /* Rebase the vector table base address */
+        SCB->VTOR = ( (uint32_t)APP_START_ADDR & SCB_VTOR_TBLOFF_Msk );
+
+        /* Load the Reset Handler address of the application */
+        application_code_entry = ( void ( * )( void ) )(
+            unsigned *)( *(unsigned *)( APP_START_ADDR + 4 ) );
+
+        /* Jump to user Reset Handler in the application */
+        application_code_entry();
+        /* Load the Reset Handler address of the application */
+        application_code_entry = ( void ( * )( void ) )(
+            unsigned *)( *(unsigned *)( APP_START_ADDR  ) );
+        /* Jump to user Reset Handler in the application */
+        application_code_entry();
+    }
 }
