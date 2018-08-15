@@ -12,8 +12,6 @@ uint8_t  writeTriggered = 0;
 uint16_t ndx = 0;
 uint32_t flashAddr = 256;
 uint32_t imageSize = 0;
-uint16_t codeSeg = 0;
-uint16_t prgmCntr = 0;
 
 uint8_t makeHex()
 {
@@ -50,7 +48,7 @@ void writeToFlash( uint16_t len )
 
 void burnFlashHeader()
 {
-    uint8_t header[16] = {'F', 'L', 'X', 'I', 'M', 'G', ':'};
+    uint8_t header[12] = {'F', 'L', 'X', 'I', 'M', 'G', ':'};
 
     header[7] = ( imageSize >> 24 ) & 0xFF;
     header[8] = ( imageSize >> 16 ) & 0xFF;
@@ -59,14 +57,8 @@ void burnFlashHeader()
 
     header[11] = ':';
 
-    header[12] = ( codeSeg >> 8 ) & 0xFF;
-    header[13] = codeSeg & 0xFF;
-
-    header[14] = ( prgmCntr >> 8 ) & 0xFF;
-    header[15] = prgmCntr & 0xFF;
-
     FLASH_erasePage( 0 );
-    FLASH_writeBytes( 0, header, 16 );
+    FLASH_writeBytes( 0, header, 12 );
 }
 
 void runSerialBootLoader()
@@ -76,7 +68,6 @@ void runSerialBootLoader()
     flashAddr = 256;
     imageSize = 0;
 
-    // TODO: WDT
     while( 1 ) {
         type = getHex();
         SEND_ACK;
@@ -87,7 +78,7 @@ void runSerialBootLoader()
             usePong ^= 1;
             writeToFlash( ndx );
             burnFlashHeader();
-            break;
+            checkFlashImage();
         }
         else if( type == 0 ) {
             for( ; len > 0; len-- ) {
@@ -114,13 +105,12 @@ void runSerialBootLoader()
             SEND_ACK;
         }
         else if( type == 3 ) {
-            uint8_t tmp[8];
             uint8_t i;
 
             // Record type 3 has the code segment and program counter to load
-            for( i = 0; i < 4; i++ ) tmp[i] = getHex();
-            memcpy( &codeSeg, tmp, sizeof( uint16_t ) );
-            memcpy( &prgmCntr, &tmp[2], sizeof( uint16_t ) );
+            // however that segment of code is already located at the boot
+            // address so just eat the bytes
+            for( i = 0; i < 4; i++ ) getHex();
 
             SEND_ACK;
         }

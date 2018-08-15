@@ -1,6 +1,9 @@
 #include <hardware.h>
+#include <sam.h>
+#include <optiboot.h>
 
 #define GCLK_WAIT_SYNC while( GCLK->STATUS.bit.SYNCBUSY )
+#define CYCLES_PER_MS FCPU / 1000
 
 inline void SPI_init()
 {
@@ -151,8 +154,36 @@ uint8_t UART_read()
 {
     while( !SERCOM3->USART.INTFLAG.bit.RXC )
         ;
+
     return SERCOM3->USART.DATA.reg;
 }
 
 void cleanUp()
-{}
+{
+    // Kill SPI
+    // Reset
+    SERCOM1->SPI.CTRLA.bit.SWRST = 1;
+    while( SERCOM1->SPI.CTRLA.bit.SWRST || SERCOM1->SPI.STATUS.bit.SYNCBUSY )
+        ;
+
+    // Take down the bus clock
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID( GCLK_CLKCTRL_ID_SERCOM1_CORE_Val ) |
+                        GCLK_CLKCTRL_GEN( GCLK_CLKCTRL_GEN_GCLK0_Val );
+    GCLK_WAIT_SYNC;
+
+    PM->APBCMASK.reg &= ~PM_APBCMASK_SERCOM1;
+
+    // Kill UART
+    // Reset
+    SERCOM3->USART.CTRLA.bit.SWRST = 1;
+    while( SERCOM3->USART.CTRLA.bit.SWRST ||
+           SERCOM3->USART.STATUS.bit.SYNCBUSY )
+        ;
+
+    // Take down the bus clock
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID( GCLK_CLKCTRL_ID_SERCOM3_CORE_Val ) |
+                        GCLK_CLKCTRL_GEN( GCLK_CLKCTRL_GEN_GCLK0_Val );
+    GCLK_WAIT_SYNC;
+
+    PM->APBCMASK.reg &= ~PM_APBCMASK_SERCOM3;
+}

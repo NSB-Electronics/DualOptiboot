@@ -17,11 +17,8 @@
 uint8_t FLASH_busy();
 void    FLASH_command( uint8_t cmd, uint8_t isWrite );
 uint8_t FLASH_readByte( uint32_t addr );
-void    CheckFlashImage();
-
-#ifdef DEBUG
-void FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len );
-void FLASH_erasePage( uint32_t addr );
-#endif /* DEBUG */
+void    checkFlashImage();
+void    FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len );
+void    FLASH_erasePage( uint32_t addr );
 
 #endif /* EXTFLASH_H_ */

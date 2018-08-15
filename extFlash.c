@@ -1,9 +1,9 @@
 #include <extFlash.h>
 #include <hardware.h>
 #include <NVM.h>
-#include <sam.h>
 #include <stdlib.h>
 #include <string.h>
+#include <optiboot.h>
 
 // Manufacturer ID
 #define ADESTO 0x1F
@@ -14,13 +14,13 @@
 #define AT25DF041B 0x4402
 #define MX25R8035F 0x14
 
-uint32_t _memSize = 0;
-uint32_t _prgmSpace = 0;
-
 #define FLASH_SELECT OUTPUT_LOW( FLASH_SS )
 #define FLASH_UNSELECT OUTPUT_HIGH( FLASH_SS )
 
+uint32_t _memSize = 0;
+uint32_t _prgmSpace = 0;
 uint16_t deviceId;
+uint8_t  _imageFlashed = 0;
 
 uint8_t FLASH_busy()
 {
@@ -56,7 +56,6 @@ uint8_t FLASH_readByte( uint32_t addr )
     return result;
 }
 
-#ifdef DEBUG
 void FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len )
 {
     if( addr % 256 == 0 ) FLASH_erasePage( addr );
@@ -90,9 +89,8 @@ void FLASH_erasePage( uint32_t addr )
         FLASH_UNSELECT;
     }
 }
-#endif /* DEBUG */
 
-void CheckFlashImage()
+void checkFlashImage()
 {
     // Get manufacturer ID and JEDEC ID
     FLASH_SELECT;
@@ -129,7 +127,7 @@ void CheckFlashImage()
      ~~~ |0                   10                  20                  30 | ...
      ~~~ |0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1| ...
      ~~~ +---------------------------------------------------------------+
-     ~~~ |F L X I M G|:|X X X X|:| CODESEG PRGMCNTR                      | ...
+     ~~~ |F L X I M G|:|X X X X|:|                                       | ...
      ~~~ + - - - - - - - - - - - - - - - +-------------------------------+
      ~~~ | ID String |S|Len|S| Binary Image data                         | ...
      ~~~ +---------------------------------------------------------------+
@@ -154,16 +152,6 @@ void CheckFlashImage()
     uint32_t imagesize = ( FLASH_readByte( 7 ) << 24 ) |
                          ( FLASH_readByte( 8 ) << 16 ) |
                          ( FLASH_readByte( 9 ) << 8 ) | FLASH_readByte( 10 );
-
-    // Grab the code segment
-    uint32_t codeSeg = ( FLASH_readByte( 12 ) << 24 ) |
-                       ( FLASH_readByte( 13 ) << 16 ) |
-                       ( FLASH_readByte( 14 ) << 8 ) | FLASH_readByte( 15 );
-
-    // Grab the program counter
-    uint32_t prgmCntr = ( FLASH_readByte( 16 ) << 24 ) |
-                        ( FLASH_readByte( 17 ) << 16 ) |
-                        ( FLASH_readByte( 18 ) << 8 ) | FLASH_readByte( 19 );
 
     if( imagesize == 0 || imagesize > _memSize || imagesize > _prgmSpace )
         goto erase;
@@ -195,6 +183,7 @@ void CheckFlashImage()
     }
 
     free( cache );
+    _imageFlashed = 1;
 
 erase : {
     uint32_t flashAddr;
@@ -207,27 +196,8 @@ erase : {
     }
 }
 
-    {
-#define APP_START_ADDR 0x00008000
-        /* Pointer to the Application Section */
-        void ( *application_code_entry )( void );
-
-        /* Rebase the Stack Pointer */
-        __set_MSP( *(uint32_t *)APP_START_ADDR );
-
-        /* Rebase the vector table base address */
-        SCB->VTOR = ( (uint32_t)APP_START_ADDR & SCB_VTOR_TBLOFF_Msk );
-
-        /* Load the Reset Handler address of the application */
-        application_code_entry = ( void ( * )( void ) )(
-            unsigned *)( *(unsigned *)( APP_START_ADDR + 4 ) );
-
-        /* Jump to user Reset Handler in the application */
-        application_code_entry();
-        /* Load the Reset Handler address of the application */
-        application_code_entry = ( void ( * )( void ) )(
-            unsigned *)( *(unsigned *)( APP_START_ADDR  ) );
-        /* Jump to user Reset Handler in the application */
-        application_code_entry();
+    if( _imageFlashed ) {
+        setImageKey();
+        startApplication();
     }
 }
