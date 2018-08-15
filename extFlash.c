@@ -57,14 +57,17 @@ uint8_t FLASH_readByte( uint32_t addr )
 }
 
 #ifdef DEBUG
-void FLASH_writeByte( uint32_t addr, uint8_t byte )
+void FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len )
 {
     if( addr % 256 == 0 ) FLASH_erasePage( addr );
     FLASH_command( SPIFLASH_BYTEPAGEPROGRAM, 1 );
     SPI_transfer( addr >> 16 );
     SPI_transfer( addr >> 8 );
     SPI_transfer( addr );
-    SPI_transfer( byte );
+    for( ; len > 0; len-- ) {
+        SPI_transfer( *data );
+        data++;
+    }
     FLASH_UNSELECT;
 }
 
@@ -156,17 +159,17 @@ void CheckFlashImage()
 
     // Variables for moving the image to internal program space
     uint32_t i;
-    uint32_t prgmSpaceAddr = params.bootSize;
+    uint32_t prgmSpaceAddr = 0x8000;//params.bootSize;
     uint16_t cacheIndex = 0;
-    uint8_t *cache = (uint8_t *)malloc( sizeof( uint8_t ) * params.pageSize );
+    uint8_t *cache = (uint8_t *)malloc( sizeof( uint8_t ) * params.rowSize );
 
     // Copy the image to program space one page at a time
     for( i = 0; i < imagesize; i++ ) {
-        cache[cacheIndex++] = FLASH_readByte( i + 12 );
-        if( cacheIndex == params.pageSize ) {
+        cache[cacheIndex++] = FLASH_readByte( i + 256 );
+        if( cacheIndex == params.rowSize ) {
             eraseRow( prgmSpaceAddr );
-            writeFlash( prgmSpaceAddr, cache, params.pageSize );
-            prgmSpaceAddr += params.pageSize;
+            writeFlash( prgmSpaceAddr, cache, params.rowSize );
+            prgmSpaceAddr += params.rowSize;
             cacheIndex = 0;
         }
     }

@@ -20,7 +20,7 @@ uint8_t FLASH_readByte( uint32_t addr );
 void    CheckFlashImage();
 
 #ifdef DEBUG
-void FLASH_writeByte( uint32_t addr, uint8_t byte );
+void FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len );
 void FLASH_erasePage( uint32_t addr );
 #endif /* DEBUG */
 
