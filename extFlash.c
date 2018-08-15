@@ -1,9 +1,9 @@
 #include <extFlash.h>
 #include <hardware.h>
 #include <NVM.h>
-#include <sam.h>
 #include <stdlib.h>
 #include <string.h>
+#include <optiboot.h>
 
 // Manufacturer ID
 #define ADESTO 0x1F
@@ -14,11 +14,13 @@
 #define AT25DF041B 0x4402
 #define MX25R8035F 0x14
 
-uint32_t _memSize = 0;
-uint32_t _prgmSpace = 0;
-
 #define FLASH_SELECT OUTPUT_LOW( FLASH_SS )
 #define FLASH_UNSELECT OUTPUT_HIGH( FLASH_SS )
+
+uint32_t _memSize = 0;
+uint32_t _prgmSpace = 0;
+uint16_t deviceId;
+uint8_t  _imageFlashed = 0;
 
 uint8_t FLASH_busy()
 {
@@ -54,13 +56,47 @@ uint8_t FLASH_readByte( uint32_t addr )
     return result;
 }
 
-void CheckFlashImage()
+void FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len )
+{
+    if( addr % 256 == 0 ) FLASH_erasePage( addr );
+    FLASH_command( SPIFLASH_BYTEPAGEPROGRAM, 1 );
+    SPI_transfer( addr >> 16 );
+    SPI_transfer( addr >> 8 );
+    SPI_transfer( addr );
+    for( ; len > 0; len-- ) {
+        SPI_transfer( *data );
+        data++;
+    }
+    FLASH_UNSELECT;
+}
+
+void FLASH_erasePage( uint32_t addr )
+{
+    FLASH_command( SPIFLASH_PAGEERASE_256, 1 ); // WE not required
+    if( deviceId == AT25DF041B ) {
+        // Page address consists of 11 page address bits PA<10:0> of 256Bytes
+        // each
+        SPI_transfer( ( ( uint8_t )( addr >> 8 ) ) & 0x07 ); // byte 1
+        SPI_transfer( (uint8_t)addr );                       // byte 2
+        SPI_transfer( 0 );                                   // byte 3 (dummy)
+        FLASH_UNSELECT;
+    }
+    else {
+        // Page address consists of 9 page address bits PA<8:0> of 256Bytes each
+        SPI_transfer( ( ( uint8_t )( addr >> 8 ) ) & 0x01 ); // byte 1
+        SPI_transfer( (uint8_t)addr );                       // byte 2
+        SPI_transfer( 0 );                                   // byte 3 (dummy)
+        FLASH_UNSELECT;
+    }
+}
+
+void checkFlashImage()
 {
     // Get manufacturer ID and JEDEC ID
     FLASH_SELECT;
     SPI_transfer( SPIFLASH_JEDECID );
-    uint8_t  manufacturerId = SPI_transfer( 0 );
-    uint16_t deviceId = SPI_transfer( 0 );
+    uint8_t manufacturerId = SPI_transfer( 0 );
+    deviceId = SPI_transfer( 0 );
     deviceId <<= 8;
     deviceId |= SPI_transfer( 0 );
     FLASH_UNSELECT;
@@ -91,7 +127,7 @@ void CheckFlashImage()
      ~~~ |0                   10                  20                  30 | ...
      ~~~ |0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1| ...
      ~~~ +---------------------------------------------------------------+
-     ~~~ |F L X I M G|:|X X X X|:|D D D D D D D D D D D D D D D D D D D D| ...
+     ~~~ |F L X I M G|:|X X X X|:|                                       | ...
      ~~~ + - - - - - - - - - - - - - - - +-------------------------------+
      ~~~ | ID String |S|Len|S| Binary Image data                         | ...
      ~~~ +---------------------------------------------------------------+
@@ -116,31 +152,42 @@ void CheckFlashImage()
     uint32_t imagesize = ( FLASH_readByte( 7 ) << 24 ) |
                          ( FLASH_readByte( 8 ) << 16 ) |
                          ( FLASH_readByte( 9 ) << 8 ) | FLASH_readByte( 10 );
+
     if( imagesize == 0 || imagesize > _memSize || imagesize > _prgmSpace )
         goto erase;
 
     // Variables for moving the image to internal program space
     uint32_t i;
+#ifdef DEBUG
+    uint32_t prgmSpaceAddr = 0x00008000;
+#else
     uint32_t prgmSpaceAddr = params.bootSize;
+#endif /* DEBUG */
     uint16_t cacheIndex = 0;
-    uint8_t *cache = (uint8_t *)malloc( sizeof( uint8_t ) * params.pageSize );
+    uint8_t *cache = (uint8_t *)malloc( sizeof( uint8_t ) * params.rowSize );
 
     // Copy the image to program space one page at a time
     for( i = 0; i < imagesize; i++ ) {
-        cache[cacheIndex++] = FLASH_readByte( i + 12 );
-        if( cacheIndex == params.pageSize ) {
+        cache[cacheIndex++] = FLASH_readByte( i + 256 );
+        if( cacheIndex == params.rowSize ) {
             eraseRow( prgmSpaceAddr );
-            writeFlash( prgmSpaceAddr, cache, params.pageSize );
-            prgmSpaceAddr += params.pageSize;
+            writeFlash( prgmSpaceAddr, cache, params.rowSize );
+            prgmSpaceAddr += params.rowSize;
             cacheIndex = 0;
         }
     }
 
+    if( cacheIndex > 0 ) {
+        eraseRow( prgmSpaceAddr );
+        writeFlash( prgmSpaceAddr, cache, cacheIndex );
+    }
+
     free( cache );
+    _imageFlashed = 1;
 
 erase : {
     uint32_t flashAddr;
-    for( flashAddr = 0; flashAddr < imagesize; flashAddr += 0x8000 ) {
+    for( flashAddr = 0; flashAddr <= imagesize; flashAddr += 0x8000 ) {
         FLASH_command( SPIFLASH_BLOCKERASE_32K, 1 );
         SPI_transfer( flashAddr >> 16 );
         SPI_transfer( flashAddr >> 8 );
@@ -149,5 +196,8 @@ erase : {
     }
 }
 
-    // TODO: Reset CPU?
+    if( _imageFlashed ) {
+        setImageKey();
+        startApplication();
+    }
 }
