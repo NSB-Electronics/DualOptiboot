@@ -44,5 +44,5 @@ int main( void )
     initHardware();
     checkFlashImage();
     if( checkImageKey() == 0 ) startApplication();
-    runSerialBootLoader();
+    serialConsole();
 }
