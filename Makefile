@@ -46,8 +46,8 @@ $(PROJ_DIR)/hardware.c \
 $(PROJ_DIR)/NVM.c \
 $(PROJ_DIR)/optiboot.c \
 $(PROJ_DIR)/serial.c \
-#../Device_Startup/startup_samd20.c \
-#../Device_Startup/system_samd20.c
+$(PROJ_DIR)/startup_samd20.c \
+$(PROJ_DIR)/system_samd20.c
 
 
 PREPROCESSING_SRCS += 
@@ -62,8 +62,8 @@ $(BUILD_DIR)/hardware.o \
 $(BUILD_DIR)/NVM.o \
 $(BUILD_DIR)/optiboot.o \
 $(BUILD_DIR)/serial.o \
-#Device_Startup/startup_samd20.o \
-#Device_Startup/system_samd20.o
+$(BUILD_DIR)/startup_samd20.o \
+$(BUILD_DIR)/system_samd20.o
 
 OBJS_AS_ARGS +=  \
 $(BUILD_DIR)/extFlash.o \
@@ -71,8 +71,8 @@ $(BUILD_DIR)/hardware.o \
 $(BUILD_DIR)/NVM.o \
 $(BUILD_DIR)/optiboot.o \
 $(BUILD_DIR)/serial.o \
-#Device_Startup/startup_samd20.o \
-#Device_Startup/system_samd20.o
+$(BUILD_DIR)/startup_samd20.o \
+$(BUILD_DIR)/system_samd20.o
 
 C_DEPS +=  \
 $(BUILD_DIR)/extFlash.d \
@@ -80,8 +80,8 @@ $(BUILD_DIR)/hardware.d \
 $(BUILD_DIR)/NVM.d \
 $(BUILD_DIR)/optiboot.d \
 $(BUILD_DIR)/serial.d \
-#Device_Startup/startup_samd20.d \
-#Device_Startup/system_samd20.d
+$(BUILD_DIR)/startup_samd20.d \
+$(BUILD_DIR)/system_samd20.d
 
 C_DEPS_AS_ARGS +=  \
 $(BUILD_DIR)/extFlash.d \
@@ -89,8 +89,8 @@ $(BUILD_DIR)/hardware.d \
 $(BUILD_DIR)/NVM.d \
 $(BUILD_DIR)/optiboot.d \
 $(BUILD_DIR)/serial.d \
-#Device_Startup/startup_samd20.d \
-#Device_Startup/system_samd20.d
+$(BUILD_DIR)/startup_samd20.d \
+$(BUILD_DIR)/system_samd20.d
 
 OUTPUT_FILE_PATH +=$(BUILD_DIR)/DualOptiboot.elf
 
@@ -100,7 +100,7 @@ ADDITIONAL_DEPENDENCIES:=
 
 LIB_DEP+= 
 
-LINKER_SCRIPT_DEP+=
+LINKER_SCRIPT_DEP+= $(PROJ_DIR)/samd20e18_flash.ld
 
 # AVR32/GNU C Compiler
 $(BUILD_DIR)/%.o: $(PROJ_DIR)/%.c
