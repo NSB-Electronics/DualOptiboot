@@ -14,9 +14,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License.
  * You may obtain a copy of the Licence at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,9 +33,10 @@
  * Initial system clock frequency. The System RC Oscillator (RCSYS) provides
  *  the source for the main clock at chip startup.
  */
-#define __SYSTEM_CLOCK    (1000000)
+#define __SYSTEM_CLOCK ( 1000000 )
 
-uint32_t SystemCoreClock = __SYSTEM_CLOCK;/*!< System Clock Frequency (Core Clock)*/
+uint32_t SystemCoreClock =
+    __SYSTEM_CLOCK; /*!< System Clock Frequency (Core Clock)*/
 
 /**
  * Initialize the system
@@ -43,11 +44,11 @@ uint32_t SystemCoreClock = __SYSTEM_CLOCK;/*!< System Clock Frequency (Core Cloc
  * @brief  Setup the microcontroller system.
  *         Initialize the System and update the SystemCoreClock variable.
  */
-void SystemInit(void)
+void SystemInit( void )
 {
-	// Keep the default device state after reset
-	SystemCoreClock = __SYSTEM_CLOCK;
-	return;
+    // Keep the default device state after reset
+    SystemCoreClock = __SYSTEM_CLOCK;
+    return;
 }
 
 /**
@@ -56,9 +57,9 @@ void SystemInit(void)
  * @brief  Updates the SystemCoreClock with current core Clock
  *         retrieved from cpu registers.
  */
-void SystemCoreClockUpdate(void)
+void SystemCoreClockUpdate( void )
 {
-	// Not implemented
-	SystemCoreClock = __SYSTEM_CLOCK;
-	return;
+    // Not implemented
+    SystemCoreClock = __SYSTEM_CLOCK;
+    return;
 }

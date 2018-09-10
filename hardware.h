@@ -16,15 +16,15 @@
     {                                                       \
         PORT->Group[0].DIRSET.reg = ( uint32_t )( 1 << x ); \
     }
-#define SET_ODD_PIN_PERIPH( pin, periph )                                  \
-    {                                                                      \
+#define SET_ODD_PIN_PERIPH( pin, periph )                                   \
+    {                                                                       \
         PORT->Group[0].PMUX[( pin >> 1 )].reg |= PORT_PMUX_PMUXO( periph ); \
-        PORT->Group[0].PINCFG[pin].reg = PORT_PINCFG_PMUXEN;               \
+        PORT->Group[0].PINCFG[pin].reg = PORT_PINCFG_PMUXEN;                \
     }
-#define SET_EVEN_PIN_PERIPH( pin, periph )                                 \
-    {                                                                      \
+#define SET_EVEN_PIN_PERIPH( pin, periph )                                  \
+    {                                                                       \
         PORT->Group[0].PMUX[( pin >> 1 )].reg |= PORT_PMUX_PMUXE( periph ); \
-        PORT->Group[0].PINCFG[pin].reg = PORT_PINCFG_PMUXEN;               \
+        PORT->Group[0].PINCFG[pin].reg = PORT_PINCFG_PMUXEN;                \
     }
 
 #ifndef FCPU
@@ -56,6 +56,6 @@ void    UART_write( uint8_t _data );
 uint8_t UART_read();
 void    cleanUp();
 uint8_t checkSerialTimeOut();
-void resetSerialTimeOut();
+void    resetSerialTimeOut();
 
 #endif /* HARDWARE_H_ */

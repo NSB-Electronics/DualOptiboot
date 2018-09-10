@@ -27,13 +27,12 @@ void startApplication()
 
 int main( void )
 {
-	uint8_t resetCause = PM->RCAUSE.reg;
-	
+    uint8_t resetCause = PM->RCAUSE.reg;
+
     initHardware();
     checkFlashImage();
-	
-	if( resetCause != PM_RCAUSE_WDT )
-		serialConsole();
-		
-	startApplication();
+
+    if( resetCause != PM_RCAUSE_WDT ) serialConsole();
+
+    startApplication();
 }

@@ -12,7 +12,7 @@ char    ack[] = {'~', 'O', '?', 'P'};
 
 uint8_t  flashComplete = 0;
 uint8_t  flashBuff[SERIAL_BUFF_SIZE];
-uint16_t  flashBuffIndex = 0;
+uint16_t flashBuffIndex = 0;
 uint16_t imageCRC = 0;
 uint32_t flashAddr = 256;
 uint32_t imageSize = 0;
@@ -113,8 +113,7 @@ void serialFormatToAMRFormat()
         }
     }
     else if( serialBuff[numSerialLengthBytes + 1] == RF_WS_CMD_KEY ) {
-        if( serialBuff[numSerialLengthBytes + 2] == '7' )
-            sendAck();
+        if( serialBuff[numSerialLengthBytes + 2] == '7' ) sendAck();
     }
 }
 
@@ -164,11 +163,10 @@ void serialParser( uint8_t c )
 void serialConsole()
 {
     while( 1 ) {
-		resetSerialTimeOut();
+        resetSerialTimeOut();
         uint8_t ch = UART_read();
-		if( checkSerialTimeOut() )
-			return;
-		
+        if( checkSerialTimeOut() ) return;
+
         serialParser( ch );
         if( flashComplete ) {
             burnFlashHeader();

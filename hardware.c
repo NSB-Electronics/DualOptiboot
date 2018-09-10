@@ -7,7 +7,7 @@
 #define SERIAL_TIMEOUT ( 1500UL * CYCLES_PER_MS )
 
 uint32_t _serialTimeOut = 0;
-uint8_t _timeOut = 0;
+uint8_t  _timeOut = 0;
 
 inline void SPI_init()
 {
@@ -157,11 +157,11 @@ void UART_write( uint8_t _data )
 uint8_t UART_read()
 {
     while( !SERCOM3->USART.INTFLAG.bit.RXC ) {
-		if( ++_serialTimeOut > SERIAL_TIMEOUT ) {
-			_timeOut = 1;
-			return 0;
-		}
-	}
+        if( ++_serialTimeOut > SERIAL_TIMEOUT ) {
+            _timeOut = 1;
+            return 0;
+        }
+    }
 
     return SERCOM3->USART.DATA.reg;
 }
@@ -198,10 +198,10 @@ void cleanUp()
 
 uint8_t checkSerialTimeOut()
 {
-	return _timeOut;
+    return _timeOut;
 }
 
 void resetSerialTimeOut()
 {
-	_serialTimeOut = 0;
+    _serialTimeOut = 0;
 }
