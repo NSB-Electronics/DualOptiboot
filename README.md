@@ -1,40 +1,34 @@
-DualOptiboot
-============
+# Configuring
 
-Custom Optiboot to add wireless programming capability to Moteino
-Copyright Felix Rusu (2013-2014), felix@lowpowerlab.com
-More at: http://lowpowerlab.com/Moteino
+_BAUD_: 38400
 
-This Optiboot version is modified to add the capability of reflashing 
-from an external SPI flash memory chip. As configured this will work 
-with Moteino (www.lowpowerlab.com/Moteino) provided a SPI flash chip
-is present on the dedicated onboard footprint.
+# Hardware Dependencies
+
+_Processor_: Atmel SAMD20E18 is the only supported processor at this time
+
+_External Flash Memory_: AT25XE011, AT25DF041B
+
+
+# Compiling
+TODO:
+# Image Check
+
+This Optiboot version is modified to add the capability of reflashing
+from an external SPI flash memory chip.
 Summary of how this Optiboot version works:
-- it looks for an external flash chip
-- if one is found (SPI returns valid data) it will further look
-  for a new sketch flash image signature and size
-  starting at address 0:   FLXIMG:9999:XXXXXXXXXXX
-  where: - 'FLXIMG' is fixed signature indicating FLASH chip
-           contains a valid new flash image to be burned
-         - '9999' are 4 size bytes indicating how long the
-           new flash image is (how many bytes to read)
-         - 'XXXXXX' are the de-hexified bytes of the flash 
-           pages to be burned
-         - ':' colons have fixed positions (delimiters)
-- if no valid signature/size are found, it will skip and
-  function as it normally would (listen to STK500 protocol on serial port)
-
-The added code will result in a compiled size of just under 1kb
-(Originally Optiboot takes just under 0.5kb)
-
--------------------------------------------------------------------------------------------------------------
-
-To compile copy the Optiboot.c and Makefile files where Optiboot is originally located, mine is at:
-arduino-install-dir\hardware\arduino\bootloaders\optiboot\
-Backup the original files andbefore overwrite both files.
-Then compile by running:
-make atmega328
-make atmega1284p
-
-##License
-GPL 3.0. See License.txt file.
+* it looks for an external flash chip
+* if one is found (SPI returns valid data) it will further look for a new sketch
+flash image signature and size
+* starting at address 0:   FLXIMG:NNNN:
+* where:
+   - 'FLXIMG' is fixed signature indicating FLASH chip contains a valid new
+   flash image to be burned
+   - 'NNNN' are 4 size bytes (uint_16) indicating how long the new flash image is
+   (how many bytes to read), max 4,294,967,295 Bytes
+   - ':' colons have fixed positions (delimiters)
+* starting at adress 256: XXXX..
+* where:
+   - 'XXXX...' is the firmware image that is to be burned
+- if no valid signature/size are found, it will check for an existing image that
+has already been burned, if there is one it will run it. If there is no image it
+will listen on a serial port for an incoming image.
