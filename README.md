@@ -1,6 +1,6 @@
 # Configuring
 
-_BAUD_: 38400
+_BAUD_: 115200
 
 # Hardware Dependencies
 
@@ -10,7 +10,25 @@ _External Flash Memory_: AT25XE011, AT25DF041B
 
 
 # Compiling
-TODO:
+```shell
+cd path/to/DualOptiboot
+make all
+```
+
+# Usage
+
+Booting an image into flash memory requires the Flume AMR tool `AMRConsole`. Ensure your device is connected to a serial port
+1. Launch the `AMRConsole` with the command:
+```shell
+python ./amrConsole.py -p PORTNAME -b 115200
+```
+2. Power on your device
+3. Type in the boot command
+```python
+-b path/to/someProgram.hex
+```
+4. Wait for the boot sequence to finish
+
 # Image Check
 
 This Optiboot version is modified to add the capability of reflashing
