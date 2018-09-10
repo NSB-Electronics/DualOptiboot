@@ -17,7 +17,7 @@ make all
 
 # Usage
 
-Booting an image into flash memory requires the Flume AMR tool `AMRConsole`. Ensure your device is connected to a serial port
+Booting an image into flash memory requires the Flume AMR tool [AMRConsole](https://github.com/FlumeTech/Flume_AMR/tree/GA/tools/AMRConsole). Ensure your device is connected to a serial port
 1. Launch the `AMRConsole` with the command:
 ```shell
 python ./amrConsole.py -p PORTNAME -b 115200
