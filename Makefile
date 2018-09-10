@@ -109,16 +109,6 @@ $(BUILD_DIR)/%.o: $(PROJ_DIR)/%.c
 	$(TOOLCHAIN_PATH)/arm-none-eabi-gcc -x c -mthumb -D__SAMD20E18__ -DDEBUG  -I$(CMSIS_DIR) -I$(ATMEL_DFP) -I$(PROJ_DIR)  -Og -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 
-
-# AVR32/GNU Preprocessing Assembler
-
-
-
-# AVR32/GNU Assembler
-
-
-
-
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C_DEPS)),)
 -include $(C_DEPS)
@@ -130,19 +120,20 @@ directories:
 	mkdir build
 
 # All Target
-all: directories $(OUTPUT_FILE_PATH) $(ADDITIONAL_DEPENDENCIES)
+all: clean directories $(OUTPUT_FILE_PATH) $(ADDITIONAL_DEPENDENCIES)
 
 $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP)
 	@echo Building target: $@
 	@echo Invoking: ARM/GNU Archiver : 6.3.1
-	$(TOOLCHAIN_PATH)/arm-none-eabi-ar -r -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) 
+	$(TOOLCHAIN_PATH)/arm-none-eabi-gcc -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -mthumb -Wl,-Map=$(BUILD_DIR)/DualOptiboot.map --specs=nosys.specs -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m0plus -Tsamd20e18_flash.ld  
 	@echo Finished building target: $@
 	
-	
-
-
-
-
+	$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy -O binary $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.bin
+	$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy -O ihex -R .eeprom -R .fuse -R .lock -R .signature  $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.hex
+	$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy -j .eeprom --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O binary $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.eep
+	$(TOOLCHAIN_PATH)/arm-none-eabi-objdump -h -S $(BUILD_DIR)/DualOptiboot.elf > $(BUILD_DIR)/DualOptiboot.lss
+	$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy -O srec -R .eeprom -R .fuse -R .lock -R .signature  $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.srec
+	$(TOOLCHAIN_PATH)/arm-none-eabi-size $(BUILD_DIR)/DualOptiboot.elf
 
 # Other Targets
 clean:
