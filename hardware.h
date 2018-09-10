@@ -55,5 +55,7 @@ uint8_t SPI_transfer( uint8_t _data );
 void    UART_write( uint8_t _data );
 uint8_t UART_read();
 void    cleanUp();
+uint8_t checkSerialTimeOut();
+void resetSerialTimeOut();
 
 #endif /* HARDWARE_H_ */

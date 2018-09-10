@@ -4,21 +4,7 @@
 #include <extFlash.h>
 #include <serial.h>
 #include <string.h>
-
-const char *imageKey = "arduinoEImageKey";
-
-void setImageKey()
-{
-    eraseRow( IMAGE_PRESENT_ADDR );
-    writeFlash( IMAGE_PRESENT_ADDR, imageKey, 16 );
-}
-
-int checkImageKey()
-{
-    char key[16];
-    readFlash( IMAGE_PRESENT_ADDR, key, 16 );
-    return memcmp( key, imageKey, 16 );
-}
+#include <sam.h>
 
 void startApplication()
 {
@@ -41,8 +27,13 @@ void startApplication()
 
 int main( void )
 {
+	uint8_t resetCause = PM->RCAUSE.reg;
+	
     initHardware();
     checkFlashImage();
-    if( checkImageKey() == 0 ) startApplication();
-    serialConsole();
+	
+	if( resetCause != PM_RCAUSE_WDT )
+		serialConsole();
+		
+	startApplication();
 }

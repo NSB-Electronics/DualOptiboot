@@ -196,8 +196,5 @@ erase : {
     }
 }
 
-    if( _imageFlashed ) {
-        setImageKey();
-        startApplication();
-    }
+    if( _imageFlashed ) startApplication();
 }

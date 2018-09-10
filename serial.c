@@ -164,7 +164,11 @@ void serialParser( uint8_t c )
 void serialConsole()
 {
     while( 1 ) {
+		resetSerialTimeOut();
         uint8_t ch = UART_read();
+		if( checkSerialTimeOut() )
+			return;
+		
         serialParser( ch );
         if( flashComplete ) {
             burnFlashHeader();
