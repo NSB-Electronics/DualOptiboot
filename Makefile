@@ -135,6 +135,8 @@ $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP)
 	$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy -O srec -R .eeprom -R .fuse -R .lock -R .signature  $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.srec
 	$(TOOLCHAIN_PATH)/arm-none-eabi-size $(BUILD_DIR)/DualOptiboot.elf
 
+	cp $(BUILD_DIR)/DualOptiboot.hex bin/DualOptiboot.hex
+
 # Other Targets
 clean:
 	rm -rf build
