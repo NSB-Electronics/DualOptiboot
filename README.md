@@ -10,6 +10,14 @@ _External Flash Memory_: AT25XE011, AT25DF041B
 
 
 # Compiling
+
+You will need to make a directory in your project called `.local`, in that directory create a file named `config.mk`.
+In `config.mk` you will need to define the following symbols:
+```shell
+SDK_PATH := /path/to/SAM-SDK
+```
+
+Then you will just have to call make to compile!
 ```shell
 cd path/to/DualOptiboot
 make all
