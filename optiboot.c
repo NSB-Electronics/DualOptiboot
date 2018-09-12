@@ -6,6 +6,14 @@
 #include <string.h>
 #include <sam.h>
 
+#define RESET_FLAG_ADDR ( 0x8000UL - 0x100UL )
+
+void saveResetFlag( uint32_t flag )
+{
+    eraseRow( RESET_FLAG_ADDR );
+    writeFlash( (void *)RESET_FLAG_ADDR, &flag, sizeof( uint32_t ) );
+}
+
 void startApplication()
 {
     // Take down the current application
@@ -29,6 +37,7 @@ int main( void )
 {
     uint8_t resetCause = PM->RCAUSE.reg;
 
+    saveResetFlag( resetCause );
     initHardware();
     checkFlashImage();
 
