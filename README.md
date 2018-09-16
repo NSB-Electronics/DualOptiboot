@@ -1,6 +1,6 @@
 # Configuring
 
-_BAUD_: 38400
+_BAUD_: 115200
 
 # Hardware Dependencies
 
@@ -10,7 +10,33 @@ _External Flash Memory_: AT25XE011, AT25DF041B
 
 
 # Compiling
-TODO:
+
+You will need to make a directory in your project called `.local`, in that directory create a file named `config.mk`.
+In `config.mk` you will need to define the following symbols:
+```shell
+SDK_PATH := /path/to/SAM-SDK
+```
+
+Then you will just have to call make to compile!
+```shell
+cd path/to/DualOptiboot
+make all
+```
+
+# Usage
+
+Booting an image into flash memory requires the Flume AMR tool [AMRConsole](https://github.com/FlumeTech/Flume_AMR/tree/GA/tools/AMRConsole). Ensure your device is connected to a serial port
+1. Launch the `AMRConsole` with the command:
+```shell
+python ./amrConsole.py -p PORTNAME -b 115200
+```
+2. Power on your device
+3. Type in the boot command
+```python
+-b path/to/someProgram.hex
+```
+4. Wait for the boot sequence to finish
+
 # Image Check
 
 This Optiboot version is modified to add the capability of reflashing

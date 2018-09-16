@@ -3,7 +3,11 @@
 #include <optiboot.h>
 
 #define GCLK_WAIT_SYNC while( GCLK->STATUS.bit.SYNCBUSY )
-#define CYCLES_PER_MS FCPU / 1000
+#define CYCLES_PER_MS ( FCPU / 1000 )
+#define SERIAL_TIMEOUT ( 1500UL * CYCLES_PER_MS )
+
+uint32_t _serialTimeOut = 0;
+uint8_t  _timeOut = 0;
 
 inline void SPI_init()
 {
@@ -152,8 +156,12 @@ void UART_write( uint8_t _data )
 
 uint8_t UART_read()
 {
-    while( !SERCOM3->USART.INTFLAG.bit.RXC )
-        ;
+    while( !SERCOM3->USART.INTFLAG.bit.RXC ) {
+        if( ++_serialTimeOut > SERIAL_TIMEOUT ) {
+            _timeOut = 1;
+            return 0;
+        }
+    }
 
     return SERCOM3->USART.DATA.reg;
 }
@@ -186,4 +194,14 @@ void cleanUp()
     GCLK_WAIT_SYNC;
 
     PM->APBCMASK.reg &= ~PM_APBCMASK_SERCOM3;
+}
+
+uint8_t checkSerialTimeOut()
+{
+    return _timeOut;
+}
+
+void resetSerialTimeOut()
+{
+    _serialTimeOut = 0;
 }

@@ -7,8 +7,6 @@
 
 #define IMAGE_PRESENT_ADDR ( APP_START_ADDR - 0x100 )
 
-void setImageKey();
-int  checkImageKey();
 void startApplication();
 
 #endif /* OPTIBOOT_H_ */
