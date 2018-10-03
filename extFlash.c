@@ -12,15 +12,58 @@
 // Device ID
 #define AT25XE011 0x4200
 #define AT25DF041B 0x4402
-#define MX25R8035F 0x14
+#define MX25R8035F 0x2814
 
 #define FLASH_SELECT OUTPUT_LOW( FLASH_SS )
 #define FLASH_UNSELECT OUTPUT_HIGH( FLASH_SS )
 
 uint32_t _memSize = 0;
 uint32_t _prgmSpace = 0;
-uint16_t deviceId;
+uint16_t _deviceId;
 uint8_t  _imageFlashed = 0;
+uint16_t _eraseSize = 256;
+
+void writeUUID( uint8_t *uuid )
+{
+	FLASH_writeBytes( 0, uuid, 8 );
+}
+
+uint16_t FLASH_init()
+{
+    // Get manufacturer ID and JEDEC ID
+    FLASH_SELECT;
+    SPI_transfer( SPIFLASH_JEDECID );
+    uint8_t manufacturerId = SPI_transfer( 0 );
+    _deviceId = SPI_transfer( 0 );
+    _deviceId <<= 8;
+    _deviceId |= SPI_transfer( 0 );
+    FLASH_UNSELECT;
+
+    // Check against manufacturer ID and JEDEC ID
+    switch( manufacturerId ) {
+        case ADESTO:
+            if( _deviceId == AT25XE011 ) {
+                _memSize = 0x20000;
+                _eraseSize = 256;
+            }
+            else if( _deviceId == AT25DF041B ) {
+                _memSize = 0x80000;
+                _eraseSize = 256;
+            }
+            break;
+        case MACRONIX:
+            if( _deviceId == MX25R8035F ) {
+                _memSize = 0x100000;
+                _eraseSize = 4096;
+            }
+            break;
+        default:
+            // Unknown manufacturer
+            return 0;
+    }
+
+    return _eraseSize;
+}
 
 uint8_t FLASH_busy()
 {
@@ -58,7 +101,7 @@ uint8_t FLASH_readByte( uint32_t addr )
 
 void FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len )
 {
-    if( addr % 256 == 0 ) FLASH_erasePage( addr );
+    if( addr % _eraseSize == 0 ) FLASH_erasePage( addr );
     FLASH_command( SPIFLASH_BYTEPAGEPROGRAM, 1 );
     SPI_transfer( addr >> 16 );
     SPI_transfer( addr >> 8 );
@@ -72,51 +115,37 @@ void FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len )
 
 void FLASH_erasePage( uint32_t addr )
 {
-    FLASH_command( SPIFLASH_PAGEERASE_256, 1 ); // WE not required
-    if( deviceId == AT25DF041B ) {
-        // Page address consists of 11 page address bits PA<10:0> of 256Bytes
-        // each
-        SPI_transfer( ( ( uint8_t )( addr >> 8 ) ) & 0x07 ); // byte 1
-        SPI_transfer( (uint8_t)addr );                       // byte 2
-        SPI_transfer( 0 );                                   // byte 3 (dummy)
-        FLASH_UNSELECT;
+    if( _eraseSize == 256 ) {
+        FLASH_command( SPIFLASH_PAGEERASE_256, 1 ); // WE not required
+        if( _deviceId == AT25DF041B ) {
+            // Page address consists of 11 page address bits PA<10:0> of
+            // 256Bytes each
+            SPI_transfer( ( ( uint8_t )( addr >> 8 ) ) & 0x07 ); // byte 1
+            SPI_transfer( (uint8_t)addr );                       // byte 2
+            SPI_transfer( 0 ); // byte 3 (dummy)
+            FLASH_UNSELECT;
+        }
+        else {
+            // Page address consists of 9 page address bits PA<8:0> of 256Bytes
+            // each
+            SPI_transfer( ( ( uint8_t )( addr >> 8 ) ) & 0x01 ); // byte 1
+            SPI_transfer( (uint8_t)addr );                       // byte 2
+            SPI_transfer( 0 ); // byte 3 (dummy)
+            FLASH_UNSELECT;
+        }
     }
-    else {
-        // Page address consists of 9 page address bits PA<8:0> of 256Bytes each
-        SPI_transfer( ( ( uint8_t )( addr >> 8 ) ) & 0x01 ); // byte 1
-        SPI_transfer( (uint8_t)addr );                       // byte 2
-        SPI_transfer( 0 );                                   // byte 3 (dummy)
-        FLASH_UNSELECT;
+    else if( _eraseSize == 4096 ) {
+        FLASH_command( SPIFLASH_BLOCKERASE_4K, 1 );
+        SPI_transfer( addr >> 16 );
+        SPI_transfer( addr >> 8 );
+        SPI_transfer( addr );
+		FLASH_UNSELECT;
     }
 }
 
 void checkFlashImage()
 {
-    // Get manufacturer ID and JEDEC ID
-    FLASH_SELECT;
-    SPI_transfer( SPIFLASH_JEDECID );
-    uint8_t manufacturerId = SPI_transfer( 0 );
-    deviceId = SPI_transfer( 0 );
-    deviceId <<= 8;
-    deviceId |= SPI_transfer( 0 );
-    FLASH_UNSELECT;
-
-    // Check against manufacturer ID and JEDEC ID
-    switch( manufacturerId ) {
-        case ADESTO:
-            if( deviceId == AT25XE011 )
-                _memSize = 0x20000;
-            else if( deviceId == AT25DF041B )
-                _memSize = 0x80000;
-            break;
-        case MACRONIX:
-            // TODO: MACRONIX
-            if( deviceId == MX25R8035F ) _memSize = 0x100000;
-            break;
-        default:
-            // Unknown manufacturer
-            return;
-    }
+    FLASH_init();
 
     // Global unprotect
     FLASH_command( SPIFLASH_STATUSWRITE, 1 );
@@ -133,15 +162,15 @@ void checkFlashImage()
      ~~~ +---------------------------------------------------------------+
      ~~~~~~ */
     // Check for an image
-    if( FLASH_readByte( 0 ) != 'F' )
+    if( FLASH_readByte( FLASH_IMAGE_OFFSET + 0 ) != 'F' )
         return;
-    else if( FLASH_readByte( 1 ) != 'L' )
+    else if( FLASH_readByte( FLASH_IMAGE_OFFSET + 1 ) != 'L' )
         goto erase;
-    else if( FLASH_readByte( 2 ) != 'X' )
+    else if( FLASH_readByte( FLASH_IMAGE_OFFSET + 2 ) != 'X' )
         goto erase;
-    else if( FLASH_readByte( 6 ) != ':' )
+    else if( FLASH_readByte( FLASH_IMAGE_OFFSET + 6 ) != ':' )
         goto erase;
-    else if( FLASH_readByte( 11 ) != ':' )
+    else if( FLASH_readByte( FLASH_IMAGE_OFFSET + 11 ) != ':' )
         goto erase;
 
     // Grab internal flash memory parameters
@@ -149,9 +178,9 @@ void checkFlashImage()
     _prgmSpace = ( params.nvmTotalSize - params.bootSize - params.eepromSize );
 
     // Grab the image size and validate
-    uint32_t imagesize = ( FLASH_readByte( 7 ) << 24 ) |
-                         ( FLASH_readByte( 8 ) << 16 ) |
-                         ( FLASH_readByte( 9 ) << 8 ) | FLASH_readByte( 10 );
+    uint32_t imagesize = ( FLASH_readByte( FLASH_IMAGE_OFFSET + 7 ) << 24 ) |
+                         ( FLASH_readByte( FLASH_IMAGE_OFFSET + 8 ) << 16 ) |
+                         ( FLASH_readByte( FLASH_IMAGE_OFFSET + 9 ) << 8 ) | FLASH_readByte( FLASH_IMAGE_OFFSET + 10 );
 
     if( imagesize == 0 || imagesize > _memSize || imagesize > _prgmSpace )
         goto erase;
@@ -168,7 +197,7 @@ void checkFlashImage()
 
     // Copy the image to program space one page at a time
     for( i = 0; i < imagesize; i++ ) {
-        cache[cacheIndex++] = FLASH_readByte( i + 256 );
+        cache[cacheIndex++] = FLASH_readByte( FLASH_IMAGE_OFFSET + i + _eraseSize );
         if( cacheIndex == params.rowSize ) {
             eraseRow( prgmSpaceAddr );
             writeFlash( prgmSpaceAddr, cache, params.rowSize );
@@ -186,8 +215,8 @@ void checkFlashImage()
     _imageFlashed = 1;
 
 erase : {
-    uint32_t flashAddr;
-    for( flashAddr = 0; flashAddr <= imagesize; flashAddr += 0x8000 ) {
+    uint32_t flashAddr = FLASH_IMAGE_OFFSET;
+    for( ; flashAddr <= imagesize; flashAddr += 0x8000 ) {
         FLASH_command( SPIFLASH_BLOCKERASE_32K, 1 );
         SPI_transfer( flashAddr >> 16 );
         SPI_transfer( flashAddr >> 8 );

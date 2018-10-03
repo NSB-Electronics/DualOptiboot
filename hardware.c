@@ -194,6 +194,21 @@ void cleanUp()
     GCLK_WAIT_SYNC;
 
     PM->APBCMASK.reg &= ~PM_APBCMASK_SERCOM3;
+
+    // Setup the GPIOs
+    OUTPUT_LOW( RFM_SS );
+    OUTPUT_LOW( FLASH_SS );
+    CLR_PIN_OUTMODE( RFM_SS );
+    CLR_PIN_OUTMODE( FLASH_SS );
+
+    CLR_ODD_PIN_PERIPH( MISO, 2 );
+    CLR_ODD_PIN_PERIPH( SCK, 2 );
+    CLR_EVEN_PIN_PERIPH( MOSI, 2 );
+
+    CLR_ODD_PIN_PERIPH( UART_RX, 2 );
+    CLR_EVEN_PIN_PERIPH( UART_TX, 2 );
+
+    PM->APBBMASK.reg &= ~PM_APBBMASK_PORT;
 }
 
 uint8_t checkSerialTimeOut()

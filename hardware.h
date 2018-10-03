@@ -26,6 +26,22 @@
         PORT->Group[0].PMUX[( pin >> 1 )].reg |= PORT_PMUX_PMUXE( periph ); \
         PORT->Group[0].PINCFG[pin].reg = PORT_PINCFG_PMUXEN;                \
     }
+#define CLR_ODD_PIN_PERIPH( pin, periph )                      \
+    {                                                          \
+        PORT->Group[0].PMUX[( pin >> 1 )].reg &=               \
+            ~( PORT_PMUX_PMUXO( periph ) );                    \
+        PORT->Group[0].PINCFG[pin].reg &= ~PORT_PINCFG_PMUXEN; \
+    }
+#define CLR_EVEN_PIN_PERIPH( pin, periph )                     \
+    {                                                          \
+        PORT->Group[0].PMUX[( pin >> 1 )].reg &=               \
+            ~( PORT_PMUX_PMUXE( periph ) );                    \
+        PORT->Group[0].PINCFG[pin].reg &= ~PORT_PINCFG_PMUXEN; \
+    }
+#define CLR_PIN_OUTMODE( x )                                  \
+    {                                                         \
+        PORT->Group[0].DIRSET.reg &= ~( uint32_t )( 1 << x ); \
+    }
 
 #ifndef FCPU
 #define FCPU 8000000
