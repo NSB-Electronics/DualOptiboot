@@ -64,7 +64,7 @@
 // UART Settings
 #define UART_TX_PAD 1
 #define UART_RX_PAD 3
-#define UART_BAUD_RATE 115200
+#define UART_BAUD_RATE 230400
 
 void    initHardware();
 uint8_t SPI_transfer( uint8_t _data );

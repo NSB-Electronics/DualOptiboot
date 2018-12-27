@@ -1,20 +1,23 @@
 # Configuring
 
-_BAUD_: 115200
+_BAUD_: 230400
 
 # Hardware Dependencies
 
 _Processor_: Atmel SAMD20E18 is the only supported processor at this time
 
-_External Flash Memory_: AT25XE011, AT25DF041B
+_External Flash Memory_: AT25XE011, AT25DF041B, MX25R8035F, MX25R6435F
 
 
 # Compiling
 
-You will need to make a directory in your project called `.local`, in that directory create a file named `config.mk`.
-In `config.mk` you will need to define the following symbols:
+You will need to make a directory in your project called `.local`, in that directory create a file named after your local host `.mk` You can always discover your hostname by typing `hostname` into your command line. You will need the following symbols in your local host makefile:
 ```shell
-SDK_PATH := /path/to/SAM-SDK
+################################### ATSAMD20 ###################################
+SAM_SDK_DIR     := /home/warren/sam-sdk
+ARMBIN          := $(SAM_SDK_DIR)/toolchain/bin/
+SAM_ARDUINO_DIR := $(SAM_SDK_DIR)/arduino
+################################################################################
 ```
 
 Then you will just have to call make to compile!
@@ -28,7 +31,7 @@ make all
 Booting an image into flash memory requires the Flume AMR tool [AMRConsole](https://github.com/FlumeTech/Flume_AMR/tree/GA/tools/AMRConsole). Ensure your device is connected to a serial port
 1. Launch the `AMRConsole` with the command:
 ```shell
-python ./amrConsole.py -p PORTNAME -b 115200
+python ./amrConsole.py -p PORTNAME -b 230400
 ```
 2. Power on your device
 3. Type in the boot command

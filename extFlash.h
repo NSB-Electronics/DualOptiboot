@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define FLASH_IMAGE_OFFSET 0x8000
+#define FLASH_IMAGE_OFFSET 0x20000
 
 #define SPIFLASH_STATUSWRITE 0x01      /* write status register */
 #define SPIFLASH_STATUSREAD 0x05       /* read status register */
@@ -16,7 +16,7 @@
 #define SPIFLASH_PAGEERASE_256 0x81    /* erase one 256-byte page */
 #define SPIFLASH_JEDECID 0x9F          /* read JEDEC ID */
 
-void writeUUID( uint8_t *uuid );
+void     writeUUID( uint8_t *uuid );
 uint16_t FLASH_init();
 uint8_t  FLASH_busy();
 void     FLASH_command( uint8_t cmd, uint8_t isWrite );

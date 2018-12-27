@@ -7,6 +7,7 @@
 #define RF_WS_INBOUND_DELIMITER '!'
 #define RF_WS_OTA_KEY 'O'
 #define RF_WS_CMD_KEY 'C'
+#define RF_WS_BURN_UUID_KEY 'U'
 
 void serialConsole();
 

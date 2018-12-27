@@ -13,6 +13,7 @@
 #define AT25XE011 0x4200
 #define AT25DF041B 0x4402
 #define MX25R8035F 0x2814
+#define MX25R6435F 0x2817
 
 #define FLASH_SELECT OUTPUT_LOW( FLASH_SS )
 #define FLASH_UNSELECT OUTPUT_HIGH( FLASH_SS )
@@ -25,7 +26,7 @@ uint16_t _eraseSize = 256;
 
 void writeUUID( uint8_t *uuid )
 {
-	FLASH_writeBytes( 0, uuid, 8 );
+    FLASH_writeBytes( 0, uuid, 8 );
 }
 
 uint16_t FLASH_init()
@@ -54,6 +55,10 @@ uint16_t FLASH_init()
         case MACRONIX:
             if( _deviceId == MX25R8035F ) {
                 _memSize = 0x100000;
+                _eraseSize = 4096;
+            }
+            else if( _deviceId == MX25R6435F ) {
+                _memSize = 0x800000;
                 _eraseSize = 4096;
             }
             break;
@@ -139,7 +144,7 @@ void FLASH_erasePage( uint32_t addr )
         SPI_transfer( addr >> 16 );
         SPI_transfer( addr >> 8 );
         SPI_transfer( addr );
-		FLASH_UNSELECT;
+        FLASH_UNSELECT;
     }
 }
 
@@ -180,7 +185,8 @@ void checkFlashImage()
     // Grab the image size and validate
     uint32_t imagesize = ( FLASH_readByte( FLASH_IMAGE_OFFSET + 7 ) << 24 ) |
                          ( FLASH_readByte( FLASH_IMAGE_OFFSET + 8 ) << 16 ) |
-                         ( FLASH_readByte( FLASH_IMAGE_OFFSET + 9 ) << 8 ) | FLASH_readByte( FLASH_IMAGE_OFFSET + 10 );
+                         ( FLASH_readByte( FLASH_IMAGE_OFFSET + 9 ) << 8 ) |
+                         FLASH_readByte( FLASH_IMAGE_OFFSET + 10 );
 
     if( imagesize == 0 || imagesize > _memSize || imagesize > _prgmSpace )
         goto erase;
@@ -197,7 +203,8 @@ void checkFlashImage()
 
     // Copy the image to program space one page at a time
     for( i = 0; i < imagesize; i++ ) {
-        cache[cacheIndex++] = FLASH_readByte( FLASH_IMAGE_OFFSET + i + _eraseSize );
+        cache[cacheIndex++] =
+            FLASH_readByte( FLASH_IMAGE_OFFSET + i + _eraseSize );
         if( cacheIndex == params.rowSize ) {
             eraseRow( prgmSpaceAddr );
             writeFlash( prgmSpaceAddr, cache, params.rowSize );
@@ -216,7 +223,8 @@ void checkFlashImage()
 
 erase : {
     uint32_t flashAddr = FLASH_IMAGE_OFFSET;
-    for( ; flashAddr <= imagesize; flashAddr += 0x8000 ) {
+    for( ; flashAddr <= ( FLASH_IMAGE_OFFSET + imagesize );
+         flashAddr += 0x8000 ) {
         FLASH_command( SPIFLASH_BLOCKERASE_32K, 1 );
         SPI_transfer( flashAddr >> 16 );
         SPI_transfer( flashAddr >> 8 );

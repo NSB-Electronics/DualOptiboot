@@ -1,16 +1,23 @@
-################################################################################
-# Automatically-generated file. Do not edit!
-################################################################################
-include .local/config.mk
+HOST=$(shell hostname)
+PROJ_ROOT = $(PWD)
+
+# First override using local/ci defines
+ifeq ($(HOST),deploy)
+include $(TOP_DIR)conf/ci.mk
+else
+ifneq ("$(wildcard $(PROJ_ROOT)/.local/$(HOST).mk)","")
+include $(TOP_DIR).local/$(HOST).mk
+endif # local.mk
+endif # ci.mk
 
 USER_OBJS :=
 
 LIBS := 
 PROJ := 
 
-CMSIS_DIR := $(SDK_PATH)/devicePack/arm/cmsis/5.0.1/CMSIS/Include
-ATMEL_DFP := $(SDK_PATH)/devicePack/atmel/SAMD20_DFP/1.2.91/samd20/include
-TOOLCHAIN_PATH := $(SDK_PATH)/toolchain/bin
+################## Architecture dependent Project Directives ###################
+CMSIS_DIR := $(SAM_SDK_DIR)/devicepack/ARM/CMSIS/5.0.1/CMSIS/Include
+ATMEL_DFP := $(SAM_SDK_DIR)/devicepack/Atmel/SAMD20_DFP/1.2.91/samd20/include
 
 PROJ_DIR = $(PWD)
 BUILD_DIR := build
@@ -106,7 +113,7 @@ LINKER_SCRIPT_DEP+= $(PROJ_DIR)/samd20e18_flash.ld
 $(BUILD_DIR)/%.o: $(PROJ_DIR)/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 6.3.1
-	$(TOOLCHAIN_PATH)/arm-none-eabi-gcc -x c -mthumb -D__SAMD20E18__ -DDEBUG  -I$(CMSIS_DIR) -I$(ATMEL_DFP) -I$(PROJ_DIR)  -Og -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	$(ARMBIN)arm-none-eabi-gcc -x c -mthumb -D__SAMD20E18__ -DDEBUG  -I$(CMSIS_DIR) -I$(ATMEL_DFP) -I$(PROJ_DIR)  -Og -ffunction-sections -mlong-calls -g3 -Wall -mcpu=cortex-m0plus -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -125,17 +132,15 @@ all: clean directories $(OUTPUT_FILE_PATH) $(ADDITIONAL_DEPENDENCIES)
 $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP)
 	@echo Building target: $@
 	@echo Invoking: ARM/GNU Archiver : 6.3.1
-	$(TOOLCHAIN_PATH)/arm-none-eabi-gcc -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -mthumb -Wl,-Map=$(BUILD_DIR)/DualOptiboot.map --specs=nosys.specs -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m0plus -Tsamd20e18_flash.ld  
+	$(ARMBIN)arm-none-eabi-gcc -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -mthumb -Wl,-Map=$(BUILD_DIR)/DualOptiboot.map --specs=nosys.specs -Wl,--start-group -lm  -Wl,--end-group -Wl,--gc-sections -mcpu=cortex-m0plus -Tsamd20e18_flash.ld  
 	@echo Finished building target: $@
 	
-	$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy -O binary $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.bin
-	$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy -O ihex -R .eeprom -R .fuse -R .lock -R .signature  $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.hex
-	$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy -j .eeprom --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O binary $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.eep
-	$(TOOLCHAIN_PATH)/arm-none-eabi-objdump -h -S $(BUILD_DIR)/DualOptiboot.elf > $(BUILD_DIR)/DualOptiboot.lss
-	$(TOOLCHAIN_PATH)/arm-none-eabi-objcopy -O srec -R .eeprom -R .fuse -R .lock -R .signature  $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.srec
-	$(TOOLCHAIN_PATH)/arm-none-eabi-size $(BUILD_DIR)/DualOptiboot.elf
-
-	cp $(BUILD_DIR)/DualOptiboot.hex bin/DualOptiboot.hex
+	$(ARMBIN)arm-none-eabi-objcopy -O binary $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.bin
+	$(ARMBIN)arm-none-eabi-objcopy -O ihex -R .eeprom -R .fuse -R .lock -R .signature  $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.hex
+	$(ARMBIN)arm-none-eabi-objcopy -j .eeprom --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0 --no-change-warnings -O binary $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.eep
+	$(ARMBIN)arm-none-eabi-objdump -h -S $(BUILD_DIR)/DualOptiboot.elf > $(BUILD_DIR)/DualOptiboot.lss
+	$(ARMBIN)arm-none-eabi-objcopy -O srec -R .eeprom -R .fuse -R .lock -R .signature  $(BUILD_DIR)/DualOptiboot.elf $(BUILD_DIR)/DualOptiboot.srec
+	$(ARMBIN)arm-none-eabi-size $(BUILD_DIR)/DualOptiboot.elf
 
 # Other Targets
 clean:
