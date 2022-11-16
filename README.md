@@ -4,16 +4,16 @@ _BAUD_: 230400
 
 # Hardware Dependencies
 
-_Processor_: Atmel SAMD20E18 is the only supported processor at this time
+_Processor_: Atmel SAMD21G18 is the only supported processor at this time
 
-_External Flash Memory_: AT25XE011, AT25DF041B, MX25R8035F, MX25R6435F
+_External Flash Memory_: AT25XE011, AT25DF041B, MX25R8035F, MX25R6435F, W25X40
 
 
 # Compiling
 
 You will need to make a directory in your project called `.local`, in that directory create a file named after your local host `.mk` You can always discover your hostname by typing `hostname` into your command line. You will need the following symbols in your local host makefile:
 ```shell
-################################### ATSAMD20 ###################################
+################################### ATSAMD21 ###################################
 SAM_SDK_DIR     := /home/warren/sam-sdk
 ARMBIN          := $(SAM_SDK_DIR)/toolchain/bin/
 SAM_ARDUINO_DIR := $(SAM_SDK_DIR)/arduino
