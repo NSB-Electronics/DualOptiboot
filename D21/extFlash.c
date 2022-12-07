@@ -38,15 +38,25 @@ uint16_t _eraseSize = 256;
 #define GPIO( port, pin ) ( ( ( (port)&0x7u ) << 5 ) + ( (pin)&0x1Fu ) )
 #define GPIO_PIN_FUNCTION_OFF 0xffffffff
 
-#define PA10 GPIO( GPIO_PORTA, 10 )
-#define PA11 GPIO( GPIO_PORTA, 11 )
+#define M0FEATHER 1
+//#define REDBOARD 1
+#if REDBOARD
 #define FLASH_CS GPIO( GPIO_PORTA, 13 )
-#define PA24 GPIO( GPIO_PORTA, 24 )
-#define PA25 GPIO( GPIO_PORTA, 25 )
-#define USB_HOST_EN GPIO( GPIO_PORTA, 28 )
 #define PB03 GPIO( GPIO_PORTB, 3 )
 #define PB22 GPIO( GPIO_PORTB, 22 )
 #define PB23 GPIO( GPIO_PORTB, 23 )
+Sercom * s = SERCOM5;
+uint32_t clkval = GCLK_CLKCTRL_ID_SERCOM5_CORE_Val;
+uint32_t pmbusval = PM_APBCMASK_SERCOM5;
+#elif M0FEATHER
+#define FLASH_CS GPIO( GPIO_PORTA, 4 )
+#define PA12 GPIO( GPIO_PORTA, 12 )
+#define PB10 GPIO( GPIO_PORTB, 10 )
+#define PB11 GPIO( GPIO_PORTB, 11 )
+Sercom * s = SERCOM4;
+uint32_t clkval = GCLK_CLKCTRL_ID_SERCOM4_CORE_Val;
+uint32_t pmbusval = PM_APBCMASK_SERCOM4;
+#endif
 
 Port *p = PORT;
 
@@ -93,48 +103,58 @@ void _helper_set_pin( uint32_t gpio, uint32_t function )
 
 void SPI_init()
 {
-    // Init the pins
+// Init the pins
+#if REDBOARD
     _helper_set_pin( PB03, PINMUX_PB03D_SERCOM5_PAD1 );
     _helper_set_pin( PB22, PINMUX_PB22D_SERCOM5_PAD2 );
     _helper_set_pin( PB23, PINMUX_PB23D_SERCOM5_PAD3 );
+#elif M0FEATHER
+    _helper_set_pin( PA12, PINMUX_PA12D_SERCOM4_PAD0 );
+    _helper_set_pin( PB10, PINMUX_PB10D_SERCOM4_PAD2 );
+    _helper_set_pin( PB11, PINMUX_PB11D_SERCOM4_PAD3 );
+#endif
     PORT->Group[GPIO_PORTA].DIRSET.reg = 1 << FLASH_CS;
     FLASH_UNSELECT;
 
     // Enable the APBC bus
-    PM->APBCMASK.reg |= PM_APBCMASK_SERCOM5;
+    PM->APBCMASK.reg |= pmbusval;
     // GCLK
-    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID( GCLK_CLKCTRL_ID_SERCOM5_CORE_Val ) |
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_ID( clkval ) |
                         GCLK_CLKCTRL_GEN_GCLK0 | GCLK_CLKCTRL_CLKEN;
     while( GCLK->STATUS.reg & GCLK_STATUS_SYNCBUSY )
         ;
 
     // Reset the module
-    SERCOM5->SPI.CTRLA.bit.SWRST = 1;
-    while( SERCOM5->SPI.SYNCBUSY.bit.SWRST )
+    s->SPI.CTRLA.bit.SWRST = 1;
+    while( s->SPI.SYNCBUSY.bit.SWRST )
         ;
 
-    SERCOM5->SPI.CTRLA.reg = SERCOM_SPI_CTRLA_MODE_SPI_MASTER | SERCOM_SPI_CTRLA_DOPO( 0x01 ) | SERCOM_SPI_CTRLA_DIPO( 0x01 );
+#if REDBOARD
+    s->SPI.CTRLA.reg = SERCOM_SPI_CTRLA_MODE_SPI_MASTER | SERCOM_SPI_CTRLA_DOPO( 0x01 ) | SERCOM_SPI_CTRLA_DIPO( 0x01 );
+#elif M0FEATHER
+    s->SPI.CTRLA.reg = SERCOM_SPI_CTRLA_MODE_SPI_MASTER | SERCOM_SPI_CTRLA_DOPO( 0x01 ) | SERCOM_SPI_CTRLA_DIPO( 0x00 );
+#endif
 
-    // Set SERCOM5 in SPI master mode
-    SERCOM5->SPI.CTRLB.reg = SERCOM_SPI_CTRLB_RXEN;
-    while( SERCOM5->SPI.SYNCBUSY.bit.CTRLB )
+    // Set s in SPI master mode
+    s->SPI.CTRLB.reg = SERCOM_SPI_CTRLB_RXEN;
+    while( s->SPI.SYNCBUSY.bit.CTRLB )
         ;
 
     // Set the baud rate
-    SERCOM5->SPI.BAUD.reg = 12;
+    s->SPI.BAUD.reg = 12;
 
     // Enable
-    SERCOM5->SPI.CTRLA.bit.ENABLE = 1;
-    while( SERCOM5->SPI.SYNCBUSY.bit.ENABLE )
+    s->SPI.CTRLA.bit.ENABLE = 1;
+    while( s->SPI.SYNCBUSY.bit.ENABLE )
         ;
 }
 
 uint8_t SPI_transfer( uint8_t b )
 {
-    SERCOM5->SPI.DATA.bit.DATA = b;
-    while( SERCOM5->SPI.INTFLAG.bit.RXC == 0 )
+    s->SPI.DATA.bit.DATA = b;
+    while( s->SPI.INTFLAG.bit.RXC == 0 )
         ;
-    return SERCOM5->SPI.DATA.bit.DATA;
+    return s->SPI.DATA.bit.DATA;
 }
 
 uint16_t FLASH_init()
@@ -172,6 +192,10 @@ uint16_t FLASH_init()
             break;
         case WINBOND:
             if( _deviceId == W25Q32FV ) {
+                _memSize = 0x40000;
+                _eraseSize = 4096;
+            }
+            else {
                 _memSize = 0x40000;
                 _eraseSize = 4096;
             }
