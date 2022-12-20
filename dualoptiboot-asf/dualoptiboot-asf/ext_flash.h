@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define FLASH_IMAGE_OFFSET 0
+#define FLASH_IMAGE_OFFSET 4096
 
 #define SPIFLASH_STATUSWRITE 0x01      /* write status register */
 #define SPIFLASH_STATUSREAD 0x05       /* read status register */

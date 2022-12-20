@@ -1,5 +1,6 @@
 #include "ext_flash.h"
 #include "atmel_start_pins.h"
+#include "jump.h"
 #include "printf.h"
 #include <atmel_start.h>
 #include <stdbool.h>
@@ -156,22 +157,28 @@ uint8_t FLASH_readByte( uint32_t addr )
     return result;
 }
 
-void FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len )
+void FLASH_writeByte( uint32_t addr, uint8_t data )
 {
+    while( FLASH_busy() )
+        ;
     if( addr % _eraseSize == 0 ) FLASH_erasePage( addr );
     FLASH_command( SPIFLASH_BYTEPAGEPROGRAM, 1 );
     SPI_transfer( addr >> 16 );
     SPI_transfer( addr >> 8 );
     SPI_transfer( addr );
-    for( ; len > 0; len-- ) {
-        SPI_transfer( *data );
-        data++;
-    }
+    SPI_transfer( data );
     select( false );
+}
+
+void FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len )
+{
+    for( uint16_t i = 0; i < len; i++ ) FLASH_writeByte( addr + i, data[i] );
 }
 
 void FLASH_erasePage( uint32_t addr )
 {
+    while( FLASH_busy() )
+        ;
     if( _eraseSize == 256 ) {
         FLASH_command( SPIFLASH_PAGEERASE_256, 1 ); // WE not required
         if( _deviceId == AT25DF041B ) {
@@ -220,27 +227,27 @@ void check_flash_image()
      ~~~~~~ */
     // Check for an image
     printf( "checking for FLXIMG header...\n" );
-    if( FLASH_readByte( FLASH_IMAGE_OFFSET + 0 ) != 'F' ) {
+    if( FLASH_readByte( 0 ) != 'F' ) {
         printf( "no header found\n" );
         return;
     }
-    else if( FLASH_readByte( FLASH_IMAGE_OFFSET + 1 ) != 'L' )
+    else if( FLASH_readByte( 1 ) != 'L' )
         goto erase;
-    else if( FLASH_readByte( FLASH_IMAGE_OFFSET + 2 ) != 'X' )
+    else if( FLASH_readByte( 2 ) != 'X' )
         goto erase;
-    else if( FLASH_readByte( FLASH_IMAGE_OFFSET + 6 ) != ':' )
+    else if( FLASH_readByte( 6 ) != ':' )
         goto erase;
-    else if( FLASH_readByte( FLASH_IMAGE_OFFSET + 11 ) != ':' )
+    else if( FLASH_readByte( 11 ) != ':' )
         goto erase;
 
     // Grab internal flash memory parameters
     _prgmSpace = ( 0x40000 ); // TODO: check on final size here
 
     // Grab the image size and validate
-    uint32_t imagesize = ( FLASH_readByte( FLASH_IMAGE_OFFSET + 7 ) << 24 ) |
-                         ( FLASH_readByte( FLASH_IMAGE_OFFSET + 8 ) << 16 ) |
-                         ( FLASH_readByte( FLASH_IMAGE_OFFSET + 9 ) << 8 ) |
-                         FLASH_readByte( FLASH_IMAGE_OFFSET + 10 );
+    uint32_t imagesize = ( FLASH_readByte( 7 ) << 24 ) |
+                         ( FLASH_readByte( 8 ) << 16 ) |
+                         ( FLASH_readByte( 9 ) << 8 ) |
+                         FLASH_readByte( 10 );
 
     printf( "got valid header, image size is %d bytes\n", imagesize );
     if( imagesize == 0 || imagesize > _memSize || imagesize > _prgmSpace ) {
@@ -249,7 +256,7 @@ void check_flash_image()
     }
 
     // Variables for moving the image to internal program space
-    uint32_t prgmSpaceAddr = 0x8000; // TODO: don't use hard coded start address
+    uint32_t prgmSpaceAddr = APP_START_ADDR;
     uint32_t PAGE_SIZE = flash_get_page_size( &INTERNAL_FLASH );
     uint16_t cacheIndex = 0;
     //uint8_t *cache = (uint8_t *)malloc( sizeof( uint8_t ) * PAGE_SIZE );
@@ -258,7 +265,7 @@ void check_flash_image()
     // Copy the image to program space one page at a time
     printf( "writing to program memory...\n" );
     for( uint32_t i = 0; i < imagesize; i++ ) {
-        cache[cacheIndex++] = FLASH_readByte( FLASH_IMAGE_OFFSET + i + 12 );
+        cache[cacheIndex++] = FLASH_readByte( FLASH_IMAGE_OFFSET + i );
         if( cacheIndex == PAGE_SIZE ) {
             printf( "erasing page addr %X\n", prgmSpaceAddr );
             flash_erase( &INTERNAL_FLASH, prgmSpaceAddr, 1 );
@@ -288,9 +295,11 @@ void check_flash_image()
     _imageFlashed = 1;
 
 erase : {
-    uint32_t flashAddr = FLASH_IMAGE_OFFSET;
+    uint32_t flashAddr = 0;
     for( ; flashAddr <= ( FLASH_IMAGE_OFFSET + imagesize );
          flashAddr += 0x8000 ) {
+        while( FLASH_busy() )
+            ;
         FLASH_command( SPIFLASH_BLOCKERASE_32K, 1 );
         SPI_transfer( flashAddr >> 16 );
         SPI_transfer( flashAddr >> 8 );

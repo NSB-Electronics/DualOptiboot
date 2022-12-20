@@ -26,7 +26,7 @@
     <OverrideVtorValue>exception_table</OverrideVtorValue>
     <BootSegment>2</BootSegment>
     <ResetRule>0</ResetRule>
-    <eraseonlaunchrule>0</eraseonlaunchrule>
+    <eraseonlaunchrule>1</eraseonlaunchrule>
     <EraseKey />
     <AsfFrameworkConfig>
       <framework-data xmlns="">
@@ -814,6 +814,12 @@
       <Link>printf.h</Link>
     </Compile>
     <Compile Include="serial.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="test_program.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="test_program.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="usb\class\cdc\device\cdcdf_acm.c">

@@ -1,6 +1,7 @@
 #include "ext_flash.h"
 #include "jump.h"
 #include "printf.h"
+#include "test_program.h"
 #include <atmel_start.h>
 
 #define OPTIBOOT_VERSION 1
@@ -32,6 +33,8 @@ int main( void )
     printf( "dualoptiboot version %d\n", OPTIBOOT_VERSION );
 
     SPI_init();
+    burn_image();
     check_flash_image();
+    usbdc_detach();
     jump();
 }
