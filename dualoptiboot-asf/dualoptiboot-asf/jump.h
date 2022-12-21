@@ -8,7 +8,7 @@
 #ifndef JUMP_H_
 #define JUMP_H_
 
-#define APP_START_ADDR 0x00020000 //0x00008000
+#define APP_START_ADDR 0x00008000
 
 void jump();
 

@@ -33,7 +33,7 @@ int main( void )
     printf( "dualoptiboot version %d\n", OPTIBOOT_VERSION );
 
     SPI_init();
-    burn_image();
+    // burn_image();
     check_flash_image();
     usbdc_detach();
     jump();
