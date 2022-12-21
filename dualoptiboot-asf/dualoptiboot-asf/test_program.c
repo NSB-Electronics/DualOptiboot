@@ -1537,6 +1537,9 @@ int strip_record( uint8_t *rtn_rec, int cur_index, int *read_len )
     int type = hex_string_to_int( &prg_str[start_pos] );
     start_pos += 2;
 
+    // If its the record type is not 0, its not data.
+    if( type != 0 ) *read_len = 0;
+
     // Get the record
     for( int i = 0; i < count; i++ ) {
         rtn_rec[i] = hex_string_to_int( &prg_str[start_pos] );
