@@ -322,13 +322,12 @@
     <ListValues>
       <Value>DEBUG</Value>
       <Value>ASF_4</Value>
-      <Value>USB_SERIAL</Value>
-      <Value>ADAFRUIT_M0_FEATHER</Value>
+      <Value>RED_BOARD_TURBO</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.preprocessor.UndefSymbols>
     <ListValues>
-      <Value>RED_BOARD_TURBO</Value>
+      <Value>ADAFRUIT_M0_FEATHER</Value>
     </ListValues>
   </armgcc.compiler.preprocessor.UndefSymbols>
   <armgcc.compiler.directories.IncludePaths>

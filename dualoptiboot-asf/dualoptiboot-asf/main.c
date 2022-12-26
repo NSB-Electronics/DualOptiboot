@@ -6,6 +6,7 @@
 
 #define OPTIBOOT_VERSION 1
 
+#if defined( BLD_TEST_APP )
 void test_app()
 {
     printf( "welcome to the test application, this loop will repeat\n" );
@@ -16,25 +17,43 @@ void test_app()
         printf( "loop %d\n", i++ );
     }
 }
+#endif /* BLD_TEST_APP */
 
 int main( void )
 {
     /* Initializes MCU, drivers and middleware */
     atmel_start_init();
 
+#if defined( USB_SERIAL )
     while( !cdcdf_acm_is_enabled() ) {
         // wait cdc acm to be installed
     };
 
     delay_ms( 10000 );
+#endif /* USB_SERIAL */
 
-    //test_app();
+#if defined( BLD_TEST_APP )
+    // Define BLD_TEST_APP to create a sample program that can be utilized in the same
+    // framework to test the bootloader.
+    test_app();
+#endif /* BLD_TEST_APP */
 
     printf( "dualoptiboot version %d\n", OPTIBOOT_VERSION );
 
     SPI_init();
-    // burn_image();
+
+#if defined( TEST_PRGM )
+    // Define TEST_PRGM to burn a fixed image of the BLD_TEST_APP into SPI flash and back,
+    // utilized for testing purposes only. WARNING - this will drastically increase the size
+    // of the program and the user will have to account for this.
+    burn_image();
+#endif /* TEST_PRGM */
+
     check_flash_image();
+
+#if defined( USB_SERIAL )
     usbdc_detach();
+#endif /* USB_SERIAL */
+
     jump();
 }

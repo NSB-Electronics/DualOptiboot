@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#if defined( TEST_PRGM )
 const char prg_str[] =
     ":020000022000DC"
     ":10000000082800202D010200290102002901020018"
@@ -1598,3 +1599,5 @@ void burn_image()
         h_read[i] = FLASH_readByte( i );
     printf( "read header %s\n", h_read );
 }
+
+#endif /* TEST_PRGM */

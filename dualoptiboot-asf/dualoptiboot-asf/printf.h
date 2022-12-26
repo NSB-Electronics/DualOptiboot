@@ -68,7 +68,15 @@ void _putchar( char character );
  * \return The number of characters that are written into the array, not
  * counting the terminating null character
  */
+#if defined( USB_SERIAL )
 #define printf printf_
+#else
+#define printf( ... ) \
+    {                 \
+        do {          \
+        } while( 0 ); \
+    }
+#endif /* USB_SERIAL */
 int printf_( const char *format, ... );
 
 /**
@@ -80,7 +88,15 @@ int printf_( const char *format, ... );
  * characters that are WRITTEN into the buffer, not counting the terminating
  * null character
  */
+#if defined( USB_SERIAL )
 #define sprintf sprintf_
+#else
+#define sprintf( ... ) \
+    {                  \
+        do {           \
+        } while( 0 );  \
+    }
+#endif /* USB_SERIAL */
 int sprintf_( char *buffer, const char *format, ... );
 
 /**
@@ -94,8 +110,21 @@ int sprintf_( char *buffer, const char *format, ... );
  * than count indicates truncation. Only when the returned value is non-negative
  * and less than count, the string has been completely written.
  */
+#if defined( USB_SERIAL )
 #define snprintf snprintf_
 #define vsnprintf vsnprintf_
+#else
+#define snprintf( ... ) \
+    {                   \
+        do {            \
+        } while( 0 );   \
+    }
+#define vsnprintf( ... ) \
+    {                    \
+        do {             \
+        } while( 0 );    \
+    }
+#endif /* USB_SERIAL */
 int snprintf_( char *buffer, size_t count, const char *format, ... );
 int vsnprintf_( char *buffer, size_t count, const char *format, va_list va );
 
@@ -106,7 +135,15 @@ int vsnprintf_( char *buffer, size_t count, const char *format, va_list va );
  * \return The number of characters that are WRITTEN into the buffer, not
  * counting the terminating null character
  */
+#if defined( USB_SERIAL )
 #define vprintf vprintf_
+#else
+#define vprintf( ... ) \
+    {                  \
+        do {           \
+        } while( 0 );  \
+    }
+#endif /* USB_SERIAL */
 int vprintf_( const char *format, va_list va );
 
 /**
