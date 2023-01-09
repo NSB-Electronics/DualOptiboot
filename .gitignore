@@ -1,3 +1,4 @@
 *.*~
 .local/
-build/
+*.o
+dualoptiboot-asf/dualoptiboot-asf/Debug/
