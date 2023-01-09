@@ -33,9 +33,12 @@ OUTPUT_ARCH(arm)
 SEARCH_DIR(.)
 
 /* Memory Spaces Definitions */
+ROMSIZE = 0x00002000;
+/* ROMSIZE = 0x00008000; Use this ROMSIZE if USB_SERIAL is defined */
+/* ROMSIZE = 0x00020000; Use this ROMSIZE if USB_SERIAL && TEST_PRGM are defined */ 
 MEMORY
 {
-  rom      (rx)  : ORIGIN = 0x00000000, LENGTH = 0x00002000
+  rom      (rx)  : ORIGIN = 0x00000000, LENGTH = ROMSIZE
   ram      (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00008000
 }
 

@@ -244,10 +244,8 @@ void check_flash_image()
     _prgmSpace = ( 0x40000 ); // TODO: check on final size here
 
     // Grab the image size and validate
-    uint32_t imagesize = ( FLASH_readByte( 7 ) << 24 ) |
-                         ( FLASH_readByte( 8 ) << 16 ) |
-                         ( FLASH_readByte( 9 ) << 8 ) |
-                         FLASH_readByte( 10 );
+    uint32_t imagesize = ( FLASH_readByte( 7 ) << 24 ) | ( FLASH_readByte( 8 ) << 16 ) |
+                         ( FLASH_readByte( 9 ) << 8 ) | FLASH_readByte( 10 );
 
     printf( "got valid header, image size is %d bytes\n", imagesize );
     if( imagesize == 0 || imagesize > _memSize || imagesize > _prgmSpace ) {
@@ -270,9 +268,9 @@ void check_flash_image()
             printf( "erasing page addr %X\n", prgmSpaceAddr );
             flash_erase( &INTERNAL_FLASH, prgmSpaceAddr, 1 );
             printf( "Writing: " );
-#if defined( DEBUG )
+#if defined( USB_SERIAL )
             for( int i = 0; i < cacheIndex; i++ ) printf( "%X", cache[i] );
-#endif
+#endif /* USB_SERIAL */
             printf( " to memory at address %X\n", prgmSpaceAddr );
             flash_write( &INTERNAL_FLASH, prgmSpaceAddr, cache, PAGE_SIZE );
             prgmSpaceAddr += PAGE_SIZE;
@@ -284,9 +282,9 @@ void check_flash_image()
         printf( "erasing page addr %X\n", prgmSpaceAddr );
         flash_erase( &INTERNAL_FLASH, prgmSpaceAddr, 1 );
         printf( "Writing: " );
-#if defined( DEBUG )
+#if defined( USB_SERIAL )
         for( int i = 0; i < cacheIndex; i++ ) printf( "%X", cache[i] );
-#endif
+#endif /* USB_SERIAL */
         printf( " to memory at address %X\n", prgmSpaceAddr );
         flash_write( &INTERNAL_FLASH, prgmSpaceAddr, cache, PAGE_SIZE );
     }

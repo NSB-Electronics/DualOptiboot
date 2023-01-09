@@ -1,9 +1,3 @@
-/*
- * jump.c
- *
- * Created: 12/14/2022 11:47:30 AM
- *  Author: budge
- */
 #include "jump.h"
 #include <atmel_start.h>
 
