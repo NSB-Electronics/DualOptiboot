@@ -321,13 +321,14 @@
   <armgcc.compiler.symbols.DefSymbols>
     <ListValues>
       <Value>DEBUG</Value>
+      <Value>USB_SERIAL</Value>
+      <Value>SAM_BA_USBCDC_ONLY</Value>
       <Value>ADAFRUIT_M0_FEATHER</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.preprocessor.UndefSymbols>
     <ListValues>
       <Value>TEST_PRGM</Value>
-      <Value>USB_SERIAL</Value>
       <Value>RED_BOARD_TURBO</Value>
     </ListValues>
   </armgcc.compiler.preprocessor.UndefSymbols>
@@ -812,6 +813,12 @@
     <Compile Include="printf.h">
       <SubType>compile</SubType>
       <Link>printf.h</Link>
+    </Compile>
+    <Compile Include="sam_ba.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="sam_ba.h">
+      <SubType>compile</SubType>
     </Compile>
     <Compile Include="serial.c">
       <SubType>compile</SubType>

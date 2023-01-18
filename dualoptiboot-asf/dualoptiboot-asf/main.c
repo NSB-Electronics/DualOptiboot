@@ -1,6 +1,7 @@
 #include "ext_flash.h"
 #include "jump.h"
 #include "printf.h"
+#include "sam_ba.h"
 #include "test_program.h"
 #include <atmel_start.h>
 
@@ -50,6 +51,16 @@ int main( void )
 #endif /* TEST_PRGM */
 
     check_flash_image();
+
+#if defined( SAM_BA_USBCDC_ONLY )
+#if !defined( USB_SERIAL )
+    while( !cdcdf_acm_is_enabled() ) {
+        // wait cdc acm to be installed
+    };
+#endif /* USB_SERIAL */
+    sam_ba_monitor_init( SAM_BA_INTERFACE_USBCDC );
+    sam_ba_monitor_run();
+#endif /* SAM_BA_USBCDC_ONLY */
 
 #if defined( USB_SERIAL )
     usbdc_detach();

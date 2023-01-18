@@ -5,6 +5,8 @@
 #define APP_START_ADDR 0x00020000
 #elif defined( USB_SERIAL ) && !defined( TEST_PRGM )
 #define APP_START_ADDR 0x00008000
+#elif defined( SAM_BA_USBCDC_ONLY )
+#define APP_START_ADDR 0x00008000
 #else
 #define APP_START_ADDR 0x00002000
 #endif

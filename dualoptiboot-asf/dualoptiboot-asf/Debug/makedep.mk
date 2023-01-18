@@ -64,6 +64,8 @@ main.c
 
 printf.c
 
+sam_ba.c
+
 serial.c
 
 test_program.c
