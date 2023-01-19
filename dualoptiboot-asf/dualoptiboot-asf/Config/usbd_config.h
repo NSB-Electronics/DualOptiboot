@@ -56,13 +56,13 @@
 // <o> idVender <0x0000-0xFFFF>
 // <id> usb_cdcd_acm_idvender
 #ifndef CONF_USB_CDCD_ACM_IDVENDER
-#define CONF_USB_CDCD_ACM_IDVENDER 0x3eb
+#define CONF_USB_CDCD_ACM_IDVENDER 0x2341 //0x3eb
 #endif
 
 // <o> idProduct <0x0000-0xFFFF>
 // <id> usb_cdcd_acm_idproduct
 #ifndef CONF_USB_CDCD_ACM_IDPRODUCT
-#define CONF_USB_CDCD_ACM_IDPRODUCT 0x2404
+#define CONF_USB_CDCD_ACM_IDPRODUCT 0x4D //0x2404
 #endif
 
 // <o> bcdDevice <0x0000-0xFFFF>
@@ -78,7 +78,7 @@
 #endif
 
 #ifndef CONF_USB_CDCD_ACM_IMANUFACT
-#define CONF_USB_CDCD_ACM_IMANUFACT (CONF_USB_CDCD_ACM_IMANUFACT_EN * (CONF_USB_CDCD_ACM_IMANUFACT_EN))
+#define CONF_USB_CDCD_ACM_IMANUFACT ( CONF_USB_CDCD_ACM_IMANUFACT_EN * ( CONF_USB_CDCD_ACM_IMANUFACT_EN ) )
 #endif
 
 // <s> Unicode string of iManufact
@@ -100,8 +100,8 @@
 #endif
 
 #ifndef CONF_USB_CDCD_ACM_IPRODUCT
-#define CONF_USB_CDCD_ACM_IPRODUCT                                                                                     \
-	(CONF_USB_CDCD_ACM_IPRODUCT_EN * (CONF_USB_CDCD_ACM_IMANUFACT_EN + CONF_USB_CDCD_ACM_IPRODUCT_EN))
+#define CONF_USB_CDCD_ACM_IPRODUCT \
+    ( CONF_USB_CDCD_ACM_IPRODUCT_EN * ( CONF_USB_CDCD_ACM_IMANUFACT_EN + CONF_USB_CDCD_ACM_IPRODUCT_EN ) )
 #endif
 
 // <s> Unicode string of iProduct
@@ -123,9 +123,8 @@
 #endif
 
 #ifndef CONF_USB_CDCD_ACM_ISERIALNUM
-#define CONF_USB_CDCD_ACM_ISERIALNUM                                                                                   \
-	(CONF_USB_CDCD_ACM_ISERIALNUM_EN                                                                                   \
-	 * (CONF_USB_CDCD_ACM_IMANUFACT_EN + CONF_USB_CDCD_ACM_IPRODUCT_EN + CONF_USB_CDCD_ACM_ISERIALNUM_EN))
+#define CONF_USB_CDCD_ACM_ISERIALNUM \
+    ( CONF_USB_CDCD_ACM_ISERIALNUM_EN * ( CONF_USB_CDCD_ACM_IMANUFACT_EN + CONF_USB_CDCD_ACM_IPRODUCT_EN + CONF_USB_CDCD_ACM_ISERIALNUM_EN ) )
 #endif
 
 // <s> Unicode string of iSerialNum
@@ -161,10 +160,8 @@
 #endif
 
 #ifndef CONF_USB_CDCD_ACM_ICONFIG
-#define CONF_USB_CDCD_ACM_ICONFIG                                                                                      \
-	(CONF_USB_CDCD_ACM_ICONFIG_EN                                                                                      \
-	 * (CONF_USB_CDCD_ACM_IMANUFACT_EN + CONF_USB_CDCD_ACM_IPRODUCT_EN + CONF_USB_CDCD_ACM_ISERIALNUM_EN               \
-	    + CONF_USB_CDCD_ACM_ICONFIG_EN))
+#define CONF_USB_CDCD_ACM_ICONFIG \
+    ( CONF_USB_CDCD_ACM_ICONFIG_EN * ( CONF_USB_CDCD_ACM_IMANUFACT_EN + CONF_USB_CDCD_ACM_IPRODUCT_EN + CONF_USB_CDCD_ACM_ISERIALNUM_EN + CONF_USB_CDCD_ACM_ICONFIG_EN ) )
 #endif
 
 // <s> Unicode string of iConfig
