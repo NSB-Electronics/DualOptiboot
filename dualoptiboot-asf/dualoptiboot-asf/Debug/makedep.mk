@@ -4,6 +4,10 @@
 
 atmel_start.c
 
+board_driver_usb.c
+
+board_init.c
+
 Device_Startup\startup_samd21.c
 
 Device_Startup\system_samd21.c
@@ -30,8 +34,6 @@ hal\src\hal_sleep.c
 
 hal\src\hal_spi_m_sync.c
 
-hal\src\hal_usb_device.c
-
 hal\utils\src\utils_assert.c
 
 hal\utils\src\utils_event.c
@@ -56,25 +58,19 @@ hpl\sercom\hpl_sercom.c
 
 hpl\sysctrl\hpl_sysctrl.c
 
-hpl\usb\hpl_usb.c
-
 jump.c
 
 main.c
 
 printf.c
 
-sam_ba.c
+sam_ba_cdc.c
+
+sam_ba_monitor.c
+
+sam_ba_usb.c
 
 serial.c
 
 test_program.c
-
-usb\class\cdc\device\cdcdf_acm.c
-
-usb\device\usbdc.c
-
-usb\usb_protocol.c
-
-usb_start.c
 

@@ -26,8 +26,6 @@ extern "C" {
 #include <hal_spi_m_sync.h>
 #include <hal_spi_m_sync.h>
 
-#include "hal_usb_device.h"
-
 extern struct flash_descriptor      INTERNAL_FLASH;
 extern struct spi_m_sync_descriptor M0_SPI_FLASH;
 extern struct spi_m_sync_descriptor RED_BOARD_SPI_FLASH;
@@ -42,9 +40,6 @@ void M0_SPI_FLASH_init(void);
 void RED_BOARD_SPI_FLASH_PORT_init(void);
 void RED_BOARD_SPI_FLASH_CLOCK_init(void);
 void RED_BOARD_SPI_FLASH_init(void);
-
-void USB_DEVICE_INSTANCE_CLOCK_init(void);
-void USB_DEVICE_INSTANCE_init(void);
 
 /**
  * \brief Perform system initialization, initialize pins and clocks for

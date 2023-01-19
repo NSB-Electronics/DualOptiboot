@@ -1,7 +1,10 @@
+#include "board_definitions.h"
 #include "ext_flash.h"
 #include "jump.h"
 #include "printf.h"
-#include "sam_ba.h"
+#include "sam_ba_cdc.h"
+#include "sam_ba_monitor.h"
+#include "sam_ba_usb.h"
 #include "test_program.h"
 #include <atmel_start.h>
 
@@ -20,18 +23,12 @@ void test_app()
 }
 #endif /* BLD_TEST_APP */
 
+static volatile bool main_b_cdc_enable = false;
+
 int main( void )
 {
     /* Initializes MCU, drivers and middleware */
     atmel_start_init();
-
-#if defined( USB_SERIAL )
-    while( !cdcdf_acm_is_enabled() ) {
-        // wait cdc acm to be installed
-    };
-
-    delay_ms( 10000 );
-#endif /* USB_SERIAL */
 
 #if defined( BLD_TEST_APP )
     // Define BLD_TEST_APP to create a sample program that can be utilized in the same
@@ -52,19 +49,33 @@ int main( void )
 
     check_flash_image();
 
-#if defined( SAM_BA_USBCDC_ONLY )
-#if !defined( USB_SERIAL )
-    while( !cdcdf_acm_is_enabled() ) {
-        // wait cdc acm to be installed
-    };
-#endif /* USB_SERIAL */
-    sam_ba_monitor_init( SAM_BA_INTERFACE_USBCDC );
-    sam_ba_monitor_run();
-#endif /* SAM_BA_USBCDC_ONLY */
+    P_USB_CDC pCdc;
 
-#if defined( USB_SERIAL )
-    usbdc_detach();
-#endif /* USB_SERIAL */
+    board_init();
+    __enable_irq();
+
+    pCdc = usb_init();
+
+    /* Start the sys tick (1 ms) */
+    SysTick_Config( 1000 );
+
+    /* Wait for a complete enum on usb or a '#' char on serial line */
+    while( 1 ) {
+#if defined( SAM_BA_USBCDC_ONLY ) || defined( SAM_BA_BOTH_INTERFACES )
+        if( pCdc->IsConfigured( pCdc ) != 0 ) {
+            main_b_cdc_enable = true;
+        }
+
+        /* Check if a USB enumeration has succeeded and if comm port has been opened */
+        if( main_b_cdc_enable ) {
+            sam_ba_monitor_init( SAM_BA_INTERFACE_USBCDC );
+            /* SAM-BA on USB loop */
+            while( 1 ) {
+                sam_ba_monitor_run();
+            }
+        }
+#endif
+    }
 
     jump();
 }

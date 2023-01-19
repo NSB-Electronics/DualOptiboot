@@ -1,8 +1,5 @@
 #include "printf.h"
 #include <atmel_start.h>
-#if defined( USB_SERIAL )
-#include "usb_start.h"
-#endif /* USB_SERIAL */
 
 #define PB_LEN 1024
 char print_buf[PB_LEN];
@@ -23,10 +20,7 @@ void _putchar( char character )
     print_buf[pb_ndx++] = character;
     pb_ndx %= PB_LEN;
     if( character == '\n' ) {
-#if defined( USB_SERIAL )
-        cdcdf_acm_write( (uint8_t *)print_buf, pb_ndx );
-        delay_ms( 10 );
-#endif /* USB_SERIAL */
+        // TODO: print to the USB
         pb_ndx = 0;
     }
 }
