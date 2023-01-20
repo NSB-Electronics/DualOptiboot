@@ -41,8 +41,10 @@ int main( void )
     burn_image();
 #endif /* TEST_PRGM */
 
-    check_flash_image();
+    // If we loaded an optiboot image, jump right away.
+    if( check_flash_image() ) jump();
 
+#if defined( SAM_BA_USBCDC_ONLY )
     P_USB_CDC pCdc;
 
     board_init();
@@ -50,12 +52,9 @@ int main( void )
 
     pCdc = usb_init();
 
-    /* Start the sys tick (1 ms) */
     SysTick_Config( 1000 );
 
-    /* Wait for a complete enum on usb or a '#' char on serial line */
     while( 1 ) {
-#if defined( SAM_BA_USBCDC_ONLY ) || defined( SAM_BA_BOTH_INTERFACES )
         if( pCdc->IsConfigured( pCdc ) != 0 ) {
             main_b_cdc_enable = true;
         }
@@ -68,10 +67,8 @@ int main( void )
                 sam_ba_monitor_run();
             }
         }
-#endif
     }
-
-    jump();
+#endif /* SAM_BA_USBCDC_ONLY */
 }
 
 void SysTick_Handler( void )

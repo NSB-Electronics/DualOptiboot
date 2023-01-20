@@ -196,7 +196,7 @@ void FLASH_erasePage( uint32_t addr )
     }
 }
 
-void check_flash_image()
+uint8_t check_flash_image()
 {
     FLASH_init();
 
@@ -216,7 +216,7 @@ void check_flash_image()
      ~~~~~~ */
     // Check for an image
     if( FLASH_readByte( 0 ) != 'F' ) {
-        return;
+        return 0;
     }
     else if( FLASH_readByte( 1 ) != 'L' )
         goto erase;
@@ -277,4 +277,6 @@ erase : {
         select( false );
     }
 }
+
+    return _imageFlashed;
 }

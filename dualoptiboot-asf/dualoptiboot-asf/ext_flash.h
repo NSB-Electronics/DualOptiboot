@@ -22,7 +22,7 @@ uint16_t FLASH_init();
 uint8_t  FLASH_busy();
 void     FLASH_command( uint8_t cmd, uint8_t isWrite );
 uint8_t  FLASH_readByte( uint32_t addr );
-void     check_flash_image();
+uint8_t  check_flash_image();
 void     FLASH_writeBytes( uint32_t addr, uint8_t *data, uint16_t len );
 void     FLASH_erasePage( uint32_t addr );
 

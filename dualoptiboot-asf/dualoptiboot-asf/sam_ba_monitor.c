@@ -379,18 +379,19 @@ static void sam_ba_monitor_loop( void )
 
                 sam_ba_putdata_term( (uint8_t *)&current_number, 4 );
             }
-#ifndef SECURE_BY_DEFAULT
+            //#ifndef SECURE_BY_DEFAULT
             else if( !b_security_enabled && command == 'G' ) // Execute code. Will not allow when security is enabled.
             {
-                call_applet( current_number );
-                /* Rebase the Stack Pointer */
-                __set_MSP( sp );
-                __enable_irq();
-                if( b_sam_ba_interface_usart ) {
-                    ptr_monitor_if->put_c( 0x6 );
-                }
+                //call_applet( current_number );
+                ///* Rebase the Stack Pointer */
+                //__set_MSP( sp );
+                //__enable_irq();
+                //if( b_sam_ba_interface_usart ) {
+                //ptr_monitor_if->put_c( 0x6 );
+                //}
+                jump();
             }
-#endif
+            //#endif
             else if( command == 'T' ) // Turn on terminal mode
             {
                 b_terminal_mode = 1;
