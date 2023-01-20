@@ -19,9 +19,11 @@
 
 #include "sam_ba_monitor.h"
 #include "board_driver_usb.h"
+#include "jump.h"
 #include "sam.h"
 #include "sam_ba_cdc.h"
 #include "sam_ba_usb.h"
+#include <atmel_start.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -267,53 +269,6 @@ static void put_uint32( uint32_t n )
     sam_ba_putdata( ptr_monitor_if, buff, 8 );
 }
 
-void eraseFlash( uint32_t dst_addr )
-{
-    erased_from = dst_addr;
-    while( dst_addr < MAX_FLASH ) {
-        // Execute "ER" Erase Row
-        NVMCTRL->ADDR.reg = dst_addr / 2;
-        NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | NVMCTRL_CTRLA_CMD_ER;
-        while( NVMCTRL->INTFLAG.bit.READY == 0 )
-            ;
-        dst_addr += PAGE_SIZE * 4; // Skip a ROW
-    }
-}
-
-void writeFlash( void *flash_ptr, void *data, uint32_t size )
-{
-    volatile uint32_t *dst_addr = (volatile uint32_t *)flash_ptr;
-    const uint8_t *    src_addr = (uint8_t *)data;
-
-    // Set automatic page write
-    NVMCTRL->CTRLB.bit.MANW = 0;
-
-    // Do writes in pages
-    while( size ) {
-        // Execute "PBC" Page Buffer Clear
-        NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | NVMCTRL_CTRLA_CMD_PBC;
-        while( NVMCTRL->INTFLAG.bit.READY == 0 )
-            ;
-
-        // Fill page buffer
-        uint32_t i;
-        for( i = 0; i < ( PAGE_SIZE / 4 ) && i < size; i++ ) {
-            dst_addr[i] = src_addr[i];
-        }
-
-        // Execute "WP" Write Page
-        //NVMCTRL->ADDR.reg = ((uint32_t)dst_addr) / 2;
-        NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | NVMCTRL_CTRLA_CMD_WP;
-        while( NVMCTRL->INTFLAG.bit.READY == 0 )
-            ;
-
-        // Advance to next page
-        dst_addr += i;
-        src_addr += i;
-        size -= i;
-    }
-}
-
 static void sam_ba_monitor_loop( void )
 {
     length = sam_ba_getdata( ptr_monitor_if, data, SIZEBUFMAX );
@@ -468,7 +423,7 @@ static void sam_ba_monitor_loop( void )
 
                 // BOSSAC.exe always erase with 0x2000 as argument, but an attacker might try to erase just parts of the flash, to be able to copy or analyze the untouched parts.
                 // To mitigate this, always erase all sketch flash, that is, starting from address 0x2000. This butloader always assume 8 KByte for itself, and sketch starting at 0x2000.
-                eraseFlash( b_security_enabled ? 0x2000 : current_number );
+                flash_erase( &INTERNAL_FLASH, b_security_enabled ? APP_START_ADDR : current_number, 1 );
                 // Notify command completed
                 sam_ba_putdata( ptr_monitor_if, "X\n\r", 3 );
             }
@@ -490,10 +445,10 @@ static void sam_ba_monitor_loop( void )
                     src_buff_addr = (uint32_t *)ptr_data;
                 }
                 else {
-                    if( b_security_enabled && erased_from != 0x2000 ) {
+                    if( b_security_enabled && erased_from != APP_START_ADDR ) {
                         // To mitigate that an attacker might not use the ordinary BOSSA method of erasing flash before programming,
                         // always erase flash, if it hasn't been done already.
-                        eraseFlash( 0x2000 );
+                        flash_erase( &INTERNAL_FLASH, APP_START_ADDR, 1 );
                     }
 
                     // Write to flash

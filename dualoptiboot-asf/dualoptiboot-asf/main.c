@@ -1,7 +1,6 @@
 #include "board_definitions.h"
 #include "ext_flash.h"
 #include "jump.h"
-#include "printf.h"
 #include "sam_ba_cdc.h"
 #include "sam_ba_monitor.h"
 #include "sam_ba_usb.h"
@@ -13,12 +12,9 @@
 #if defined( BLD_TEST_APP )
 void test_app()
 {
-    printf( "welcome to the test application, this loop will repeat\n" );
-
     int i = 0;
     while( 1 ) {
         delay_ms( 1000 );
-        printf( "loop %d\n", i++ );
     }
 }
 #endif /* BLD_TEST_APP */
@@ -35,8 +31,6 @@ int main( void )
     // framework to test the bootloader.
     test_app();
 #endif /* BLD_TEST_APP */
-
-    printf( "dualoptiboot version %d\n", OPTIBOOT_VERSION );
 
     SPI_init();
 
@@ -78,4 +72,8 @@ int main( void )
     }
 
     jump();
+}
+
+void SysTick_Handler( void )
+{
 }

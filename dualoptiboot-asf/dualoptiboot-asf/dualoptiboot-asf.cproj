@@ -287,6 +287,7 @@
       <Value>DEBUG</Value>
       <Value>RED_BOARD_TURBO</Value>
       <Value>BOARD_ID_arduino_zero</Value>
+      <Value>SAM_BA_USBCDC_ONLY</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.preprocessor.UndefSymbols>
@@ -403,6 +404,9 @@
     <Compile Include="board_init.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="board_startup.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Config\hpl_dmac_config.h">
       <SubType>compile</SubType>
     </Compile>
@@ -425,9 +429,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Config\RTE_Components.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Device_Startup\startup_samd21.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Device_Startup\system_samd21.c">
@@ -745,14 +746,6 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="printf.c">
-      <SubType>compile</SubType>
-      <Link>printf.c</Link>
-    </Compile>
-    <Compile Include="printf.h">
-      <SubType>compile</SubType>
-      <Link>printf.h</Link>
-    </Compile>
     <Compile Include="sam_ba_cdc.c">
       <SubType>compile</SubType>
     </Compile>
@@ -769,9 +762,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="sam_ba_usb.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="serial.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="test_program.c">

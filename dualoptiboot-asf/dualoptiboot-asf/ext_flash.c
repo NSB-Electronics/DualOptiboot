@@ -1,7 +1,6 @@
 #include "ext_flash.h"
 #include "atmel_start_pins.h"
 #include "jump.h"
-#include "printf.h"
 #include <atmel_start.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -36,13 +35,9 @@ void SPI_init()
 #if defined( RED_BOARD_TURBO )
     spi_m_sync_enable( &RED_BOARD_SPI_FLASH );
     _cs_pin = RED_BOARD_SPI_FLASH_CS;
-    printf( "configured for redboard turbo\n" );
 #elif defined( ADAFRUIT_M0_FEATHER )
     spi_m_sync_enable( &M0_SPI_FLASH );
     _cs_pin = M0_SPI_FLASH_CS;
-    printf( "configured for m0 feather\n" );
-#else
-    printf( "warning! unknown configuration\n" );
 #endif
 }
 
@@ -68,8 +63,6 @@ uint8_t SPI_transfer( uint8_t b )
 
 uint16_t FLASH_init()
 {
-    printf( "initializing spi flash...\n" );
-
     // Get manufacturer ID and JEDEC ID
     select( true );
     SPI_transfer( SPIFLASH_JEDECID );
@@ -78,8 +71,6 @@ uint16_t FLASH_init()
     _deviceId <<= 8;
     _deviceId |= SPI_transfer( 0 );
     select( false );
-
-    printf( "got spi flash device ID %X\n", _deviceId );
 
     // Check against manufacturer ID and JEDEC ID
     switch( manufacturerId ) {
@@ -117,8 +108,6 @@ uint16_t FLASH_init()
             // Unknown manufacturer
             return 0;
     }
-
-    printf( "configured for memory size %d, erase size %d\n", _memSize, _eraseSize );
 
     return _eraseSize;
 }
@@ -226,9 +215,7 @@ void check_flash_image()
      ~~~ +---------------------------------------------------------------+
      ~~~~~~ */
     // Check for an image
-    printf( "checking for FLXIMG header...\n" );
     if( FLASH_readByte( 0 ) != 'F' ) {
-        printf( "no header found\n" );
         return;
     }
     else if( FLASH_readByte( 1 ) != 'L' )
@@ -247,7 +234,6 @@ void check_flash_image()
     uint32_t imagesize = ( FLASH_readByte( 7 ) << 24 ) | ( FLASH_readByte( 8 ) << 16 ) |
                          ( FLASH_readByte( 9 ) << 8 ) | FLASH_readByte( 10 );
 
-    printf( "got valid header, image size is %d bytes\n", imagesize );
     if( imagesize == 0 || imagesize > _memSize || imagesize > _prgmSpace ) {
         imagesize = _prgmSpace;
         goto erase;
@@ -261,17 +247,10 @@ void check_flash_image()
     uint8_t cache[1024];
 
     // Copy the image to program space one page at a time
-    printf( "writing to program memory...\n" );
     for( uint32_t i = 0; i < imagesize; i++ ) {
         cache[cacheIndex++] = FLASH_readByte( FLASH_IMAGE_OFFSET + i );
         if( cacheIndex == PAGE_SIZE ) {
-            printf( "erasing page addr %X\n", prgmSpaceAddr );
             flash_erase( &INTERNAL_FLASH, prgmSpaceAddr, 1 );
-            printf( "Writing: " );
-#if defined( USB_SERIAL )
-            for( int i = 0; i < cacheIndex; i++ ) printf( "%X", cache[i] );
-#endif /* USB_SERIAL */
-            printf( " to memory at address %X\n", prgmSpaceAddr );
             flash_write( &INTERNAL_FLASH, prgmSpaceAddr, cache, PAGE_SIZE );
             prgmSpaceAddr += PAGE_SIZE;
             cacheIndex = 0;
@@ -279,17 +258,10 @@ void check_flash_image()
     }
 
     if( cacheIndex > 0 ) {
-        printf( "erasing page addr %X\n", prgmSpaceAddr );
         flash_erase( &INTERNAL_FLASH, prgmSpaceAddr, 1 );
-        printf( "Writing: " );
-#if defined( USB_SERIAL )
-        for( int i = 0; i < cacheIndex; i++ ) printf( "%X", cache[i] );
-#endif /* USB_SERIAL */
-        printf( " to memory at address %X\n", prgmSpaceAddr );
         flash_write( &INTERNAL_FLASH, prgmSpaceAddr, cache, PAGE_SIZE );
     }
 
-    //free( cache );
     _imageFlashed = 1;
 
 erase : {
@@ -305,11 +277,4 @@ erase : {
         select( false );
     }
 }
-
-    if( _imageFlashed ) {
-        printf( "imaged flashed successfully, jumping to program now!\n" );
-    }
-    else {
-        printf( "no image found\n" );
-    }
 }

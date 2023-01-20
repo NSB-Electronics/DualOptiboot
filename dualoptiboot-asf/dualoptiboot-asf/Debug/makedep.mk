@@ -8,7 +8,7 @@ board_driver_usb.c
 
 board_init.c
 
-Device_Startup\startup_samd21.c
+board_startup.c
 
 Device_Startup\system_samd21.c
 
@@ -62,15 +62,11 @@ jump.c
 
 main.c
 
-printf.c
-
 sam_ba_cdc.c
 
 sam_ba_monitor.c
 
 sam_ba_usb.c
-
-serial.c
 
 test_program.c
 
