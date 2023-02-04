@@ -15,3 +15,19 @@ void jump()
     application_code_entry = ( void ( * )( void ) )(unsigned *)( *(unsigned *)( APP_START_ADDR + 4 ) );
     application_code_entry();
 }
+
+bool check_for_application()
+{
+    // Check the reset cause
+    uint8_t reset_cause = PM->RCAUSE.reg;
+
+    // If the reset cause is either external (EXT), or system reset request (SYST) then we want to stay in the boot loader
+    if( reset_cause == PM_RCAUSE_EXT || reset_cause == PM_RCAUSE_SYST ) return false;
+
+    // If there is something at the start address, assume it is a valid application.
+    uint32_t *app_start = (uint32_t *)APP_START_ADDR;
+    if( *app_start != INVALID_APP ) return true;
+
+    // Otherwise assume nothing is there
+    return false;
+}

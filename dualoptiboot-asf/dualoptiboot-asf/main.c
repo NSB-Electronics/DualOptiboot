@@ -7,6 +7,13 @@
 #include "test_program.h"
 #include <atmel_start.h>
 
+/************************************************************************
+1. If an optiboot image is present, use that and attempt to go
+2. If optiboot is not present, check if there is an application available, see function check_start_application
+3. If check_start_application detects BOOT_DOUBLE_TAP or was reset by bossac then stay in the bootloader and enter the sam_ba_monitor indefinitely**
+4. If check_start_application fails, then stay in bootloader and enter the sam_ba_monitor indefinitly**                                                                     
+************************************************************************/
+
 #define OPTIBOOT_VERSION 1
 
 #if defined( BLD_TEST_APP )
@@ -23,12 +30,12 @@ static volatile bool main_b_cdc_enable = false;
 
 int main( void )
 {
-    /* Initializes MCU, drivers and middleware */
+    /* Initializes MCU, drivers and middle ware */
     atmel_start_init();
 
 #if defined( BLD_TEST_APP )
     // Define BLD_TEST_APP to create a sample program that can be utilized in the same
-    // framework to test the bootloader.
+    // framework to test the boot loader.
     test_app();
 #endif /* BLD_TEST_APP */
 
@@ -41,8 +48,12 @@ int main( void )
     burn_image();
 #endif /* TEST_PRGM */
 
-    // If we loaded an optiboot image, jump right away.
+    // 1. Check for an optiboot image, jump if it's there.
     if( check_flash_image() ) jump();
+
+    // 2. Check for an application, if we find one, try to jump.
+    // 3. If the reset cause was an EXT, or a SYST, stay in the boot loader.
+    if( check_for_application() ) jump();
 
 #if defined( SAM_BA_USBCDC_ONLY )
     P_USB_CDC pCdc;
