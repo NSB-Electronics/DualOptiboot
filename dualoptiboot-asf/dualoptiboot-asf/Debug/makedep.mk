@@ -68,5 +68,3 @@ sam_ba_monitor.c
 
 sam_ba_usb.c
 
-test_program.c
-

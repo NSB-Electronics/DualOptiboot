@@ -4,7 +4,6 @@
 #include "sam_ba_cdc.h"
 #include "sam_ba_monitor.h"
 #include "sam_ba_usb.h"
-#include "test_program.h"
 #include <atmel_start.h>
 
 /************************************************************************
@@ -16,37 +15,13 @@
 
 #define OPTIBOOT_VERSION 1
 
-#if defined( BLD_TEST_APP )
-void test_app()
-{
-    int i = 0;
-    while( 1 ) {
-        delay_ms( 1000 );
-    }
-}
-#endif /* BLD_TEST_APP */
-
 static volatile bool main_b_cdc_enable = false;
 
 int main( void )
 {
     /* Initializes MCU, drivers and middle ware */
     atmel_start_init();
-
-#if defined( BLD_TEST_APP )
-    // Define BLD_TEST_APP to create a sample program that can be utilized in the same
-    // framework to test the boot loader.
-    test_app();
-#endif /* BLD_TEST_APP */
-
     SPI_init();
-
-#if defined( TEST_PRGM )
-    // Define TEST_PRGM to burn a fixed image of the BLD_TEST_APP into SPI flash and back,
-    // utilized for testing purposes only. WARNING - this will drastically increase the size
-    // of the program and the user will have to account for this.
-    burn_image();
-#endif /* TEST_PRGM */
 
     // 1. Check for an optiboot image, jump if it's there.
     if( check_flash_image() ) jump();
