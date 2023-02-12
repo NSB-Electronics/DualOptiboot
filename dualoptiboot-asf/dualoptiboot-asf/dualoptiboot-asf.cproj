@@ -29,16 +29,16 @@
     <eraseonlaunchrule>1</eraseonlaunchrule>
     <EraseKey />
     <AsfFrameworkConfig>
-      <framework-data xmlns="">
-        <options />
-        <configurations />
-        <files />
-        <documentation help="" />
-        <offline-documentation help="" />
-        <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.49.1" />
-        </dependencies>
-      </framework-data>
+      <framework-data>
+  <options />
+  <configurations />
+  <files />
+  <documentation help="" />
+  <offline-documentation help="" />
+  <dependencies>
+    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.39.0" />
+  </dependencies>
+</framework-data>
     </AsfFrameworkConfig>
     <Compiler>gcc</Compiler>
     <atStartFilePath>.atmelstart\atmel_start_config.atstart</atStartFilePath>
@@ -193,8 +193,16 @@
   <armgcc.compiler.symbols.DefSymbols>
     <ListValues>
       <Value>NDEBUG</Value>
+      <Value>ADAFRUIT_FEATHER_M0</Value>
+      <Value>BOARD_ID_feather_m0</Value>
+      <Value>SAM_BA_USBCDC_ONLY</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
+  <armgcc.compiler.preprocessor.UndefSymbols>
+    <ListValues>
+      <Value>BOARD_ID_arduino_zero</Value>
+    </ListValues>
+  </armgcc.compiler.preprocessor.UndefSymbols>
   <armgcc.compiler.directories.IncludePaths>
     <ListValues>
       <Value>%24(PackRepoDir)\arm\CMSIS\5.4.0\CMSIS\Core\Include\</Value>
@@ -212,7 +220,7 @@
       <Value>../hpl/sercom</Value>
       <Value>../hpl/sysctrl</Value>
       <Value>../hri</Value>
-      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.395\samd21a\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.331\samd21a\include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -248,7 +256,7 @@
       <Value>../hpl/sercom</Value>
       <Value>../hpl/sysctrl</Value>
       <Value>../hri</Value>
-      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.395\samd21a\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.331\samd21a\include</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.preprocessingassembler.general.IncludePaths>
@@ -268,7 +276,7 @@
       <Value>../hpl/sercom</Value>
       <Value>../hpl/sysctrl</Value>
       <Value>../hri</Value>
-      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.395\samd21a\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.331\samd21a\include</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -285,15 +293,16 @@
   <armgcc.compiler.symbols.DefSymbols>
     <ListValues>
       <Value>DEBUG</Value>
-      <Value>BOARD_ID_arduino_zero</Value>
+      <Value>BOARD_ID_feather_m0</Value>
+      <Value>ADAFRUIT_FEATHER_M0</Value>
       <Value>SAM_BA_USBCDC_ONLY</Value>
-      <Value>ADAFRUIT_M0_FEATHER</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.preprocessor.UndefSymbols>
     <ListValues>
       <Value>TEST_PRGM</Value>
       <Value>RED_BOARD_TURBO</Value>
+      <Value>BOARD_ID_arduino_zero</Value>
     </ListValues>
   </armgcc.compiler.preprocessor.UndefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -313,7 +322,7 @@
       <Value>../hpl/sercom</Value>
       <Value>../hpl/sysctrl</Value>
       <Value>../hri</Value>
-      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.395\samd21a\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.331\samd21a\include</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -351,7 +360,7 @@
       <Value>../hpl/sercom</Value>
       <Value>../hpl/sysctrl</Value>
       <Value>../hri</Value>
-      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.395\samd21a\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.331\samd21a\include</Value>
     </ListValues>
   </armgcc.assembler.general.IncludePaths>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
@@ -372,7 +381,7 @@
       <Value>../hpl/sercom</Value>
       <Value>../hpl/sysctrl</Value>
       <Value>../hri</Value>
-      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.395\samd21a\include</Value>
+      <Value>%24(PackRepoDir)\atmel\SAMD21_DFP\1.3.331\samd21a\include</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>

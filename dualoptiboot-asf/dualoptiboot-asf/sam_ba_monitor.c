@@ -422,10 +422,36 @@ static void sam_ba_monitor_loop( void )
                 //       Even if the starting address is the last byte of a ROW the entire
                 //       ROW is erased anyway.
 
+				// NB - THIS ERASE DOES NOT WORK PROPERLY, WHEN EXISTING PROGRAM IS OVERWRITTEN BOSSAC VERIFY DOES NOT PASS, FAILS ON CHECKS. MIGHT BE THAT IT DOES NOT ERASE FLASH CORRECTLY
+				
                 // BOSSAC.exe always erase with 0x2000 as argument, but an attacker might try to erase just parts of the flash, to be able to copy or analyze the untouched parts.
                 // To mitigate this, always erase all sketch flash, that is, starting from address 0x2000. This butloader always assume 8 KByte for itself, and sketch starting at 0x2000.
-                flash_erase( &INTERNAL_FLASH, b_security_enabled ? APP_START_ADDR : current_number, 1 );
-                // Notify command completed
+				//flash_erase( &INTERNAL_FLASH, b_security_enabled ? APP_START_ADDR : current_number, 1 );
+
+				// Syntax: X[ADDR]#
+				// Erase the flash memory starting from ADDR to the end of flash.
+
+				// Note: the flash memory is erased in ROWS, that is in block of 4 pages.
+				//       Even if the starting address is the last byte of a ROW the entire
+				//       ROW is erased anyway.
+				
+				uint32_t dst_addr = current_number; // starting address
+				if (b_security_enabled)
+				{
+					dst_addr = APP_START_ADDR; 
+				}
+
+				while (dst_addr < MAX_FLASH)
+				{
+					// Execute "ER" Erase Row
+					NVMCTRL->ADDR.reg = dst_addr / 2;
+					NVMCTRL->CTRLA.reg = NVMCTRL_CTRLA_CMDEX_KEY | NVMCTRL_CTRLA_CMD_ER;
+					while (NVMCTRL->INTFLAG.bit.READY == 0)
+						;
+					dst_addr += PAGE_SIZE * 4; // Skip a ROW
+				}
+				
+				// Notify command completed
                 sam_ba_putdata( ptr_monitor_if, "X\n\r", 3 );
             }
             else if( command == 'Y' ) // Write buffer to flash
