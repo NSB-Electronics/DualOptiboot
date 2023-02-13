@@ -1,16 +1,15 @@
 #ifndef JUMP_H_
 #define JUMP_H_
 
-#if defined( USB_SERIAL ) && defined( TEST_PRGM )
-#define APP_START_ADDR 0x00020000
-#elif defined( USB_SERIAL ) && !defined( TEST_PRGM )
-#define APP_START_ADDR 0x00008000
-#else
-#define APP_START_ADDR 0x00002000
-#endif
+#define APP_START_ADDR 0x00004000
 
 #define ROMSIZE APP_START_ADDR
 
+#define INVALID_APP 0xFFFFFFFF
+
+#include <stdbool.h>
+
 void jump();
+bool check_for_application();
 
 #endif /* JUMP_H_ */
